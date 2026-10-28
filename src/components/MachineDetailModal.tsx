@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { MachineItem, ComponentItem, UserRole } from '../types';
 import { TechnicalItemImage } from './TechnicalItemImage';
+import { TechnicalQrCode } from './TechnicalQrCode';
 
 interface MachineDetailModalProps {
   machine: MachineItem | null;
@@ -429,7 +430,7 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
       {/* QR Code Modal for Machine */}
       {showQrModal && (
         <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
-          <div className="relative max-w-sm w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl text-center space-y-4">
+          <div className="relative max-w-sm w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
             <button
               onClick={() => setShowQrModal(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white"
@@ -437,71 +438,16 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
               <X className="w-5 h-5" />
             </button>
 
-            <div>
-              <span className="font-mono text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                {machine.tagCode}
-              </span>
-              <h3 className="text-base font-bold text-white mt-1">
-                {machine.name}
-              </h3>
-              <p className="text-xs text-slate-400">{machine.sector}</p>
-            </div>
-
-            {/* QR Code rendering */}
-            <div className="p-4 bg-white rounded-xl inline-block shadow-inner mx-auto border-2 border-slate-300">
-              <svg viewBox="0 0 100 100" className="w-44 h-44">
-                <rect width="100" height="100" fill="#ffffff" />
-                {/* Top-left locator */}
-                <rect x="6" y="6" width="26" height="26" fill="#000000" />
-                <rect x="10" y="10" width="18" height="18" fill="#ffffff" />
-                <rect x="14" y="14" width="10" height="10" fill="#000000" />
-                {/* Top-right locator */}
-                <rect x="68" y="6" width="26" height="26" fill="#000000" />
-                <rect x="72" y="10" width="18" height="18" fill="#ffffff" />
-                <rect x="76" y="14" width="10" height="10" fill="#000000" />
-                {/* Bottom-left locator */}
-                <rect x="6" y="68" width="26" height="26" fill="#000000" />
-                <rect x="10" y="72" width="18" height="18" fill="#ffffff" />
-                <rect x="14" y="76" width="10" height="10" fill="#000000" />
-                {/* Data modules */}
-                <rect x="36" y="8" width="6" height="6" fill="#000000" />
-                <rect x="46" y="8" width="6" height="6" fill="#000000" />
-                <rect x="56" y="8" width="6" height="6" fill="#000000" />
-                <rect x="38" y="20" width="6" height="6" fill="#000000" />
-                <rect x="48" y="20" width="6" height="6" fill="#000000" />
-                <rect x="58" y="20" width="6" height="6" fill="#000000" />
-                <rect x="8" y="38" width="6" height="6" fill="#000000" />
-                <rect x="18" y="38" width="6" height="6" fill="#000000" />
-                <rect x="38" y="38" width="8" height="8" fill="#000000" />
-                <rect x="50" y="38" width="6" height="6" fill="#000000" />
-                <rect x="68" y="38" width="6" height="6" fill="#000000" />
-                <rect x="80" y="38" width="6" height="6" fill="#000000" />
-                <rect x="38" y="52" width="6" height="6" fill="#000000" />
-                <rect x="48" y="52" width="8" height="8" fill="#000000" />
-                <rect x="60" y="52" width="6" height="6" fill="#000000" />
-                <rect x="74" y="52" width="6" height="6" fill="#000000" />
-                <rect x="38" y="68" width="6" height="6" fill="#000000" />
-                <rect x="48" y="68" width="6" height="6" fill="#000000" />
-                <rect x="60" y="68" width="6" height="6" fill="#000000" />
-                <rect x="74" y="68" width="6" height="6" fill="#000000" />
-                <rect x="84" y="68" width="6" height="6" fill="#000000" />
-                <rect x="38" y="80" width="6" height="6" fill="#000000" />
-                <rect x="52" y="80" width="6" height="6" fill="#000000" />
-                <rect x="64" y="80" width="8" height="8" fill="#000000" />
-                <rect x="80" y="80" width="6" height="6" fill="#000000" />
-              </svg>
-            </div>
-
-            <p className="text-[11px] text-slate-400">
-              Aponte o leitor de QR Code para acessar imediatamente esta máquina e seus componentes de acordo com o seu perfil.
-            </p>
-
-            <button
-              onClick={() => window.print()}
-              className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition shadow-md"
-            >
-              Imprimir Etiqueta da Máquina
-            </button>
+            <TechnicalQrCode
+              payload={machine.qrCodeData || `IFTA:${machine.tagCode}`}
+              tagCode={machine.tagCode}
+              title={machine.name}
+              itemType="machine"
+              sectorOrCategory={machine.sector}
+              dimensions={machine.dimensions}
+              size={200}
+              showActions={true}
+            />
           </div>
         </div>
       )}

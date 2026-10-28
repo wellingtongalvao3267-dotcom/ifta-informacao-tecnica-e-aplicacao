@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { ComponentItem, UserRole } from '../types';
 import { TechnicalItemImage } from './TechnicalItemImage';
+import { TechnicalQrCode } from './TechnicalQrCode';
 
 interface ComponentDetailModalProps {
   component: ComponentItem | null;
@@ -484,71 +485,18 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
 
           {/* TAB 6: QR Code Field Tag */}
           {activeTab === 'qr' && (
-            <div className="flex flex-col items-center justify-center p-6 text-center space-y-4">
-              {/* Printed Tag Preview Box */}
-              <div className="p-6 bg-white text-slate-900 rounded-2xl border-4 border-slate-300 shadow-xl max-w-sm w-full flex flex-col items-center">
-                <div className="font-black tracking-tight text-lg text-slate-900 mb-1">
-                  IFTA ENGENHARIA
-                </div>
-                <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider mb-3">
-                  Etiqueta de Identificação de Campo
-                </div>
-
-                {/* QR Code SVG */}
-                <div className="p-3 bg-white border-2 border-slate-900 rounded-xl mb-3">
-                  <svg viewBox="0 0 100 100" className="w-36 h-36">
-                    {/* Simulated accurate QR Code Matrix */}
-                    <rect width="100" height="100" fill="#ffffff" />
-                    {/* Top-left locator */}
-                    <rect x="5" y="5" width="25" height="25" fill="#000000" />
-                    <rect x="9" y="9" width="17" height="17" fill="#ffffff" />
-                    <rect x="13" y="13" width="9" height="9" fill="#000000" />
-                    {/* Top-right locator */}
-                    <rect x="70" y="5" width="25" height="25" fill="#000000" />
-                    <rect x="74" y="9" width="17" height="17" fill="#ffffff" />
-                    <rect x="78" y="13" width="9" height="9" fill="#000000" />
-                    {/* Bottom-left locator */}
-                    <rect x="5" y="70" width="25" height="25" fill="#000000" />
-                    <rect x="9" y="74" width="17" height="17" fill="#ffffff" />
-                    <rect x="13" y="78" width="9" height="9" fill="#000000" />
-                    {/* Matrix data cells */}
-                    <rect x="35" y="10" width="8" height="8" fill="#000000" />
-                    <rect x="50" y="10" width="8" height="8" fill="#000000" />
-                    <rect x="40" y="25" width="8" height="8" fill="#000000" />
-                    <rect x="55" y="25" width="8" height="8" fill="#000000" />
-                    <rect x="35" y="40" width="8" height="8" fill="#000000" />
-                    <rect x="45" y="45" width="15" height="15" fill="#000000" />
-                    <rect x="70" y="40" width="10" height="10" fill="#000000" />
-                    <rect x="85" y="45" width="8" height="8" fill="#000000" />
-                    <rect x="10" y="45" width="8" height="8" fill="#000000" />
-                    <rect x="20" y="55" width="8" height="8" fill="#000000" />
-                    <rect x="35" y="70" width="8" height="8" fill="#000000" />
-                    <rect x="50" y="75" width="8" height="8" fill="#000000" />
-                    <rect x="70" y="70" width="12" height="12" fill="#000000" />
-                    <rect x="85" y="80" width="10" height="10" fill="#000000" />
-                  </svg>
-                </div>
-
-                <div className="font-mono text-sm font-bold text-slate-900 tracking-wider">
-                  {component.tagCode}
-                </div>
-                <div className="text-[11px] text-slate-700 font-medium truncate max-w-[240px]">
-                  {component.name}
-                </div>
-                <div className="text-[10px] text-slate-500 font-mono mt-1">
-                  {component.qrCodeData}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handlePrint}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs rounded-lg transition shadow"
-                >
-                  <Printer className="w-4 h-4" />
-                  <span>Imprimir Etiqueta para Painel</span>
-                </button>
-              </div>
+            <div className="py-4">
+              <TechnicalQrCode
+                payload={component.qrCodeData || `IFTA:${component.tagCode}`}
+                tagCode={component.tagCode}
+                title={component.name}
+                itemType="component"
+                sectorOrCategory={component.category}
+                manufacturer={component.manufacturer}
+                model={component.model}
+                size={200}
+                showActions={true}
+              />
             </div>
           )}
         </div>

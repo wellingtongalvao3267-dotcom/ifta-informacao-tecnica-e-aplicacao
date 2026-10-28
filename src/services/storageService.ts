@@ -57,6 +57,12 @@ export const storageService = {
             c.imageUrl = matchInit.imageUrl;
             changed = true;
           }
+          // Garantir que o payload de QR Code seja sempre válido, único e persistido
+          const tagUpper = (c.tagCode || '').trim().toUpperCase();
+          if (!c.qrCodeData || !c.qrCodeData.startsWith('IFTA:')) {
+            c.qrCodeData = `IFTA:${tagUpper}`;
+            changed = true;
+          }
         });
         // Garantir que os novos componentes da esteira (comp-008, comp-009, comp-010) estejam presentes
         INITIAL_COMPONENTS.forEach(initComp => {
@@ -81,6 +87,14 @@ export const storageService = {
         INITIAL_MACHINES.forEach(initMaq => {
           if (!storedMachines.some(m => m.id === initMaq.id || m.tagCode === initMaq.tagCode)) {
             storedMachines.push(initMaq);
+            changed = true;
+          }
+        });
+        // Garantir payload de QR Code válido e persistente para cada máquina
+        storedMachines.forEach(m => {
+          const maqTagUpper = (m.tagCode || '').trim().toUpperCase();
+          if (!m.qrCodeData || !m.qrCodeData.startsWith('IFTA:')) {
+            m.qrCodeData = `IFTA:${maqTagUpper}`;
             changed = true;
           }
         });
@@ -194,17 +208,49 @@ export const storageService = {
     localStorage.setItem(STORAGE_KEYS.COMPONENTS, JSON.stringify(items));
   },
 
+  isComponentTagUnique(tagCode: string, excludeId?: string): boolean {
+    const clean = tagCode.trim().toUpperCase();
+    if (!clean) return false;
+    const comps = this.getComponents();
+    return !comps.some(c => c.tagCode.toUpperCase() === clean && c.id !== excludeId);
+  },
+
+  generateUniqueComponentTag(prefix = 'COMP'): string {
+    const comps = this.getComponents();
+    const cleanPrefix = prefix.trim().toUpperCase().replace(/[^A-Z0-9]/g, '') || 'COMP';
+    let counter = comps.length + 1;
+    let candidate = `${cleanPrefix}-${String(counter).padStart(3, '0')}`;
+    while (comps.some(c => c.tagCode.toUpperCase() === candidate)) {
+      counter++;
+      candidate = `${cleanPrefix}-${String(counter).padStart(3, '0')}`;
+    }
+    return candidate;
+  },
+
   saveComponent(item: ComponentItem): ComponentItem {
     const items = this.getComponents();
     const idx = items.findIndex(i => i.id === item.id);
     const now = new Date().toISOString();
+    const cleanTag = item.tagCode.trim().toUpperCase();
+    const cleanQr = `IFTA:${cleanTag}`;
+
+    const normalizedItem: ComponentItem = {
+      ...item,
+      tagCode: cleanTag,
+      qrCodeData: cleanQr,
+      updatedAt: now
+    };
     
     if (idx >= 0) {
-      items[idx] = { ...item, updatedAt: now };
+      items[idx] = normalizedItem;
       this.saveComponents(items);
       return items[idx];
     } else {
-      const newItem = { ...item, createdAt: now, updatedAt: now };
+      const newItem = { 
+        ...normalizedItem, 
+        id: item.id || `comp-${Date.now()}`,
+        createdAt: now 
+      };
       items.unshift(newItem);
       this.saveComponents(items);
       return newItem;
@@ -253,21 +299,48 @@ export const storageService = {
     localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(machines));
   },
 
+  isMachineTagUnique(tagCode: string, excludeId?: string): boolean {
+    const clean = tagCode.trim().toUpperCase();
+    if (!clean) return false;
+    const machines = this.getMachines();
+    return !machines.some(m => m.tagCode.toUpperCase() === clean && m.id !== excludeId);
+  },
+
+  generateUniqueMachineTag(prefix = 'MAQ'): string {
+    const machines = this.getMachines();
+    const cleanPrefix = prefix.trim().toUpperCase().replace(/[^A-Z0-9]/g, '') || 'MAQ';
+    let counter = machines.length + 1;
+    let candidate = `${cleanPrefix}-${String(counter).padStart(2, '0')}`;
+    while (machines.some(m => m.tagCode.toUpperCase() === candidate)) {
+      counter++;
+      candidate = `${cleanPrefix}-${String(counter).padStart(2, '0')}`;
+    }
+    return candidate;
+  },
+
   saveMachine(machine: MachineItem): MachineItem {
     const machines = this.getMachines();
     const idx = machines.findIndex(m => m.id === machine.id);
     const now = new Date().toISOString();
+    const cleanTag = machine.tagCode.trim().toUpperCase();
+    const cleanQr = `IFTA:${cleanTag}`;
+
+    const normalizedMachine: MachineItem = {
+      ...machine,
+      tagCode: cleanTag,
+      qrCodeData: cleanQr,
+      updatedAt: now
+    };
 
     if (idx >= 0) {
-      machines[idx] = { ...machine, updatedAt: now };
+      machines[idx] = normalizedMachine;
       this.saveMachines(machines);
       return machines[idx];
     } else {
       const newMachine: MachineItem = {
-        ...machine,
+        ...normalizedMachine,
         id: machine.id || `maq-${Date.now()}`,
-        createdAt: now,
-        updatedAt: now
+        createdAt: now
       };
       machines.unshift(newMachine);
       this.saveMachines(machines);
