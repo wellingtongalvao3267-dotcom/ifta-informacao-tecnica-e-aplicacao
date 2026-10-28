@@ -18,6 +18,7 @@ import {
 import { ComponentItem, UserAccount, AccessLog, CategoryAccessRule, UserRole } from '../types';
 import { storageService } from '../services/storageService';
 import { INITIAL_CATEGORIES } from '../data/initialData';
+import { TechnicalItemImage } from './TechnicalItemImage';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -278,7 +279,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           {comp.tagCode}
                         </td>
                         <td className="px-4 py-3 font-medium text-slate-200">
-                          {comp.name}
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded border border-slate-800 overflow-hidden shrink-0 bg-slate-900 shadow-sm">
+                              <TechnicalItemImage
+                                src={comp.imageUrl}
+                                alt={comp.name}
+                                category={comp.category}
+                                tagCode={comp.tagCode}
+                                aspectRatio="square"
+                                showBlueprintToggle={false}
+                                allowZoom={false}
+                              />
+                            </div>
+                            <span className="line-clamp-1">{comp.name}</span>
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-slate-400 whitespace-nowrap">
                           {comp.category}

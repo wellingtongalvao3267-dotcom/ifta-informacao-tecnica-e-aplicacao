@@ -18,6 +18,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { MachineItem, ComponentItem, UserRole } from '../types';
+import { TechnicalItemImage } from './TechnicalItemImage';
 
 interface MachineDetailModalProps {
   machine: MachineItem | null;
@@ -157,6 +158,19 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
             </div>
           </div>
 
+          {/* Machine Illustrative Image / Technical Blueprint Banner */}
+          <div className="rounded-xl overflow-hidden bg-slate-950 border border-slate-800 shadow-md">
+            <TechnicalItemImage
+              src={machine.imageUrl}
+              alt={machine.name}
+              category="Máquina Industrial"
+              tagCode={machine.tagCode}
+              aspectRatio="16/9"
+              showBlueprintToggle={true}
+              allowZoom={true}
+            />
+          </div>
+
           {/* Machine Technical Overview & Dimensions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             
@@ -245,36 +259,55 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
                       key={link.componentId}
                       className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-amber-500/40 transition flex flex-col justify-between gap-3 group"
                     >
-                      <div>
-                        {/* Header of Item Card */}
-                        <div className="flex items-center justify-between gap-2 mb-1.5">
-                          <span className="font-mono text-xs font-bold text-amber-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
-                            {comp.tagCode}
-                          </span>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">
-                            {comp.category}
-                          </span>
+                      <div className="flex items-start gap-3">
+                        {/* Thumbnail illustrative image with guaranteed mobile fallback */}
+                        <div 
+                          onClick={() => onSelectComponent(comp, 'specs')}
+                          className="w-16 h-16 rounded-lg overflow-hidden border border-slate-800 shrink-0 bg-slate-900 cursor-pointer shadow-sm hover:border-amber-500/50 transition"
+                        >
+                          <TechnicalItemImage
+                            src={comp.imageUrl}
+                            alt={comp.name}
+                            category={comp.category}
+                            tagCode={comp.tagCode}
+                            aspectRatio="square"
+                            showBlueprintToggle={false}
+                            allowZoom={false}
+                          />
                         </div>
 
-                        {/* Component Name */}
-                        <h4 
-                          onClick={() => onSelectComponent(comp, 'specs')}
-                          className="text-xs font-bold text-white group-hover:text-amber-400 transition cursor-pointer line-clamp-2"
-                        >
-                          {comp.name}
-                        </h4>
-
-                        {/* Position on Machine */}
-                        {link.positionOrFunction && (
-                          <div className="mt-1.5 text-[11px] text-amber-300/90 font-mono bg-amber-500/5 px-2 py-1 rounded border border-amber-500/10">
-                            <span className="text-slate-500">Função: </span>
-                            {link.positionOrFunction}
+                        <div className="flex-1 min-w-0">
+                          {/* Header of Item Card */}
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="font-mono text-xs font-bold text-amber-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                              {comp.tagCode}
+                            </span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">
+                              {comp.category}
+                            </span>
                           </div>
-                        )}
 
-                        <p className="text-[11px] text-slate-400 mt-1 line-clamp-1">
-                          {comp.manufacturer} · {comp.model}
-                        </p>
+                          {/* Component Name */}
+                          <h4 
+                            onClick={() => onSelectComponent(comp, 'specs')}
+                            className="text-xs font-bold text-white group-hover:text-amber-400 transition cursor-pointer line-clamp-2 leading-snug"
+                          >
+                            {comp.name}
+                          </h4>
+
+                          {/* Position on Machine */}
+                          {link.positionOrFunction && (
+                            <div className="mt-1.5 text-[11px] text-amber-300/90 font-mono bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10">
+                              <span className="text-slate-500">Função: </span>
+                              {link.positionOrFunction}
+                            </div>
+                          )}
+
+                          <p className="text-[11px] text-slate-400 mt-1 line-clamp-1">
+                            {comp.manufacturer} · {comp.model}
+                          </p>
+                        </div>
+                      </div>
 
                         {/* Allowed roles badges if developer */}
                         {userRole === 'DESENVOLVEDOR' && (
@@ -296,7 +329,6 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
                             ))}
                           </div>
                         )}
-                      </div>
 
                       {/* Quick Link to Component Details */}
                       <div className="pt-2 border-t border-slate-900 flex items-center justify-between gap-2">

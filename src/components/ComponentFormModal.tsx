@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Save, Plus, Trash2, Upload, AlertCircle } from 'lucide-react';
 import { ComponentItem, TechnicalSpec, MaintenanceStep, CommonFailure, UserRole } from '../types';
 import { INITIAL_CATEGORIES } from '../data/initialData';
+import { TechnicalItemImage } from './TechnicalItemImage';
 
 interface ComponentFormModalProps {
   isOpen: boolean;
@@ -354,11 +355,17 @@ export const ComponentFormModal: React.FC<ComponentFormModalProps> = ({
                     />
                   </label>
                 </div>
-                {imageUrl && (
-                  <div className="w-32 h-24 rounded border border-slate-700 overflow-hidden bg-black">
-                    <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                  </div>
-                )}
+                <div className="w-full max-w-xs aspect-[4/3] rounded-lg border border-slate-700 overflow-hidden bg-slate-950">
+                  <TechnicalItemImage
+                    src={imageUrl}
+                    alt={name || 'Preview da Peça'}
+                    category={category}
+                    tagCode={tagCode}
+                    aspectRatio="4/3"
+                    showBlueprintToggle={true}
+                    allowZoom={false}
+                  />
+                </div>
               </div>
 
               <div>

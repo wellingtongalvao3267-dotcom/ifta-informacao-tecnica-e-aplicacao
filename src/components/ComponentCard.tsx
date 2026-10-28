@@ -1,6 +1,7 @@
 import React from 'react';
-import { FileText, Cpu, ExternalLink, QrCode } from 'lucide-react';
+import { FileText, ExternalLink, QrCode } from 'lucide-react';
 import { ComponentItem } from '../types';
+import { TechnicalItemImage } from './TechnicalItemImage';
 
 interface ComponentCardProps {
   component: ComponentItem;
@@ -19,28 +20,20 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
       className="group bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-amber-500/5 flex flex-col justify-between"
     >
       <div>
-        {/* Top Image Container */}
-        <div className="relative aspect-[4/3] w-full bg-slate-950 overflow-hidden border-b border-slate-800/80">
-          {component.imageUrl ? (
-            <img
-              src={component.imageUrl}
-              alt={component.name}
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-              onError={(e) => {
-                // Graceful fallback if image fails to load
-                (e.target as HTMLElement).style.display = 'none';
-              }}
-            />
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-slate-900 to-slate-950 text-slate-600">
-              <Cpu className="w-12 h-12 mb-2 text-slate-700" />
-              <span className="text-xs font-mono text-slate-500">Desenho Técnico Cadastrado</span>
-            </div>
-          )}
+        {/* Top Image Container with Guaranteed Mobile Technical Fallback */}
+        <div className="relative w-full border-b border-slate-800/80 bg-slate-950 overflow-hidden">
+          <TechnicalItemImage
+            src={component.imageUrl}
+            alt={component.name}
+            category={component.category}
+            tagCode={component.tagCode}
+            aspectRatio="4/3"
+            showBlueprintToggle={true}
+            allowZoom={false}
+          />
 
           {/* Quiet Tag Kicker overlay */}
-          <div className="absolute top-2.5 left-2.5 px-2 py-1 bg-slate-950/90 backdrop-blur-sm border border-slate-800 rounded text-[11px] font-mono text-amber-300">
+          <div className="absolute top-2.5 left-2.5 z-20 px-2 py-1 bg-slate-950/90 backdrop-blur-sm border border-slate-800 rounded text-[11px] font-mono text-amber-300 shadow-sm pointer-events-none">
             {component.tagCode}
           </div>
 
@@ -51,7 +44,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
               onOpenQr(component);
             }}
             title="Ver QR Code da Peça"
-            className="absolute top-2.5 right-2.5 p-1.5 bg-slate-950/90 hover:bg-amber-500 hover:text-slate-950 text-slate-300 rounded border border-slate-800 transition"
+            className="absolute top-2.5 right-2.5 z-20 p-1.5 bg-slate-950/90 hover:bg-amber-500 hover:text-slate-950 text-slate-300 rounded border border-slate-800 transition shadow-sm cursor-pointer"
           >
             <QrCode className="w-3.5 h-3.5" />
           </button>

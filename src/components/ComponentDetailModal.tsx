@@ -16,6 +16,7 @@ import {
   Check
 } from 'lucide-react';
 import { ComponentItem, UserRole } from '../types';
+import { TechnicalItemImage } from './TechnicalItemImage';
 
 interface ComponentDetailModalProps {
   component: ComponentItem | null;
@@ -209,20 +210,16 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
             <div className="space-y-6">
               {/* Media banner + description split */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                <div className="aspect-[4/3] rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center relative">
-                  {component.imageUrl ? (
-                    <img
-                      src={component.imageUrl}
-                      alt={component.name}
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center p-6 text-slate-600">
-                      <Cpu className="w-16 h-16 mb-2 text-slate-700" />
-                      <span className="text-xs font-mono">Foto do Componente</span>
-                    </div>
-                  )}
+                <div className="rounded-xl overflow-hidden bg-slate-950 border border-slate-800 shadow-md">
+                  <TechnicalItemImage
+                    src={component.imageUrl}
+                    alt={component.name}
+                    category={component.category}
+                    tagCode={component.tagCode}
+                    aspectRatio="4/3"
+                    showBlueprintToggle={true}
+                    allowZoom={true}
+                  />
                 </div>
 
                 <div className="space-y-4">

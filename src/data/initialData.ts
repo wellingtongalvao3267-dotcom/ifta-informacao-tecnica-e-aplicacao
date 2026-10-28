@@ -81,7 +81,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     model: '1LE1001-1DB23-4AA4',
     application: 'Acionamento do Misturador Principal - Tanque de Formulação TQ-04',
     description: 'Motor assíncrono de alto rendimento (IE3) com carcaça de ferro fundido, vedação W3 contra umidade e poeiras industriais, classe de isolamento F e elevação térmica classe B. Equipado com termistores PTC nos enrolamentos para proteção térmica contra sobrecarga contínua.',
-    imageUrl: '/src/assets/images/motor_trifasico_tecnico_1793121479568.jpg',
+    imageUrl: '/assets/images/motor_trifasico_tecnico_1793121479568.jpg',
     technicalDiagramUrl: '',
     diagramDescription: 'Ligação Estrela-Triângulo: Terminais U1-V1-W1 / U2-V2-W2. Ligação Estrela (Y) para 380V (corrente nominal 15.2A) e Triângulo (Δ) para 220V (corrente nominal 26.3A). Sentido de rotação horário padrão visto da ponta do eixo.',
     specs: [
@@ -150,7 +150,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     model: 'G120C - 6SL3210-1KE21-3AB0',
     application: 'Painel Central de Automação CCM-01 - Controle de Velocidade da Correia Transportadora CT-03',
     description: 'Inversor de frequência compacto com controle vetorial sensorless (SLVC) e comunicação Profinet / Modbus-RTU integrada. Possui função de segurança Safe Torque Off (STO SIL2 / PL d) certificada de fábrica, interface com operador (IOP-2) e chopper de frenagem dinâmico incorporado.',
-    imageUrl: '/src/assets/images/inversor_frequencia_1793121480476.jpg',
+    imageUrl: '/assets/images/inversor_frequencia_1793121480476.jpg',
     technicalDiagramUrl: '',
     diagramDescription: 'Esquema de Bornes: Entradas digitais DI0 (Partida/Parada), DI1 (Sentido Reverso), DI2 (Reset Falha), DI4/DI5 (STO duplo canal). Saída analógica AO0 configurada para 4-20mA proporcional à rotação. Borne 9/28 (24Vcc auxiliar).',
     specs: [
@@ -212,7 +212,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     model: 'VTUG-10-MSDR-B1T-25V20',
     application: 'Atuadores Pneumáticos da Encartuchadora Automática - Máquina MK-02',
     description: 'Ilha de válvulas pneumáticas compacta multipolo com 6 posições de válvulas 5/2 biestáveis e monoestáveis. Corpo em alumínio naval usinado com conexão multipolar Sub-D de 25 pinos para ligação direta aos módulos de saída digital do CLP. Opera com ar comprimido filtrado e lubrificado ou seco.',
-    imageUrl: '/src/assets/images/valvula_solenoide_1793121480685.jpg',
+    imageUrl: '/assets/images/valvula_solenoide_1793121480685.jpg',
     technicalDiagramUrl: '',
     diagramDescription: 'Esquema Pneumático ISO 1219: Entrada principal de pressão Borne 1 (G 1/4"), Saídas de trabalho Bornes 2 e 4 (engates rápidos 6mm), Escapes silenciados Bornes 3 e 5. Acionamento elétrico 24Vcc com LED piloto individual.',
     specs: [
@@ -274,7 +274,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     model: 'OsiSense XS612B1PAL2',
     application: 'Detecção de Fim de Curso do Pistão Elevador - Mesa Hidráulica MH-01',
     description: 'Sensor indutivo para detecção de metais ferrosos sem contato físico. Corpo cilíndrico de latão niquelado com rosca métrica M12x1 e comprimento útil de 50mm. Saída a transistor PNP com função Normalmente Aberta (NA), proteção contra inversão de polaridade e curto-circuito.',
-    imageUrl: '/src/assets/images/sensor_indutivo_1793121479829.jpg',
+    imageUrl: '/assets/images/sensor_indutivo_1793121479829.jpg',
     technicalDiagramUrl: '',
     diagramDescription: 'Esquema Elétrico de Ligação 3 Fios (Cabo 2m PVC): Marrom (+24Vcc / Borne 1), Azul (0Vcc / Borne 3), Preto (Sinal PNP / Borne 4 para entrada digital do CLP). LED âmbar integrado de 360° para visualização imediata do status de detecção.',
     specs: [
@@ -336,7 +336,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     model: '22212 EK + Bucha H 312',
     application: 'Eixo Mancal da Peneira Vibratória de Classificação - Unidade 01',
     description: 'Rolamento autocompensador de duas carreiras de rolos esféricos simétricos, gaiola de aço prensado janela centrada e furo cônico (conicidade 1:12). Projetado especificamente para acomodar desalinhamentos dinâmicos severos e altas cargas radiais e de choque.',
-    imageUrl: '',
+    imageUrl: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=800&q=80',
     technicalDiagramUrl: '',
     diagramDescription: 'Esquema Mecânico de Montagem: Eixo liso Ø55mm com bucha de fixação H 312, arruela de trava MB 12 e porca de fixação KM 12. Folga radial interna residual deve ser aferida com cálibre de lâminas antes e após a montagem final.',
     specs: [
@@ -398,7 +398,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     model: 'PV7-1X/16-20RE01MC0-16',
     application: 'Unidade Hidráulica Principal - Prensagem de Peças Prensa PR-05',
     description: 'Bomba de palhetas com controle mecânico de compensação de pressão. Mantém o deslocamento máximo até atingir a pressão regulada no parafuso compensador, reduzindo instantaneamente o fluxo quase a zero mantendo o sistema pressurizado com mínimo consumo de energia e dissipação térmica.',
-    imageUrl: '',
+    imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
     technicalDiagramUrl: '',
     diagramDescription: 'Esquema Hidráulico Simbologia ISO 1219: Linha de sucção com flange SAE 1.1/4" direto ao tanque, Linha de pressão SAE 3/4" conectada ao bloco manifold de alívio e segurança. Linha de dreno de carcaça (borbulhador) obrigatoriamente sem restrição.',
     specs: [
@@ -460,7 +460,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     model: 'TeSys Deca - GV2ME20',
     application: 'Painel Elétrico de Distribuição QGBT-02 - Proteção do Motor da Bomba de Água Gelada',
     description: 'Disjuntor-motor projetado para controle e proteção de motores elétricos trifásicos contra sobrecargas e curtos-circuitos. Equipado com disparador bimetálico regulável para sobrecorrente térmica e disparador magnético instantâneo calibrado em 13x In.',
-    imageUrl: '',
+    imageUrl: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80',
     technicalDiagramUrl: '',
     diagramDescription: 'Esquema de Ligação Tripolar: Entrada de rede pelos bornes 1/L1, 3/L2, 5/L3 e saída para o contator/motor pelos bornes 2/T1, 4/T2, 6/T3. Montagem rápida em trilho DIN 35mm. Contatos auxiliares frontais GVAE11 (1NA + 1NF) para sinalização de falha ao CLP.',
     specs: [
@@ -521,7 +521,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     model: 'SNL 512-610 + Retentor V-Ring',
     application: 'Esteira Transportadora 01 - Eixos dos Tambores de Tração e Retorno',
     description: 'Caixa de mancal bipartida em ferro fundido cinzento de alta rigidez estrutural com graxeira hidráulica tipo bico cônico integrada para lubrificação periódica. Projetada para rolamentos autocompensadores de rolos ou esferas montados sobre bucha de fixação com vedação labirinto resistente a pó abrasivo.',
-    imageUrl: '',
+    imageUrl: 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80',
     technicalDiagramUrl: '',
     diagramDescription: 'Esquema de Montagem e Lubrificação: Fixação na base por 2 parafusos M16 classe 8.8 (torque 130 N·m). Graxeira M10x1 centralizada no topo da tampa. Espaço para relubrificação com capacidade de graxa inicial de 120g.',
     specs: [
@@ -583,7 +583,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     model: 'M5010 Flat Top 2" Pitch - Acetal Branco Sanitário',
     application: 'Esteira Transportadora 01 - Plataforma de Transporte Contínuo de Embalagens',
     description: 'Fita transportadora modular de esteira contínua montada em módulos plásticos de polioximetileno (POM / Acetal) de alta resistência ao desgaste e baixo coeficiente de atrito. Superfície plana fechada (Flat Top) com pinos de articulação em polipropileno de alta durabilidade e engrenagens dentadas bipartidas de tração positiva.',
-    imageUrl: '',
+    imageUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80',
     technicalDiagramUrl: '',
     diagramDescription: 'Esquema de Montagem da Fita: Pinos de retenção travados sem cabeça nas extremidades. Sentido de avanço demarcado por setas nos elos modulares. Engrenagens tracionadas no eixo quadrado motriz de 40x40 mm.',
     specs: [
@@ -645,7 +645,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     model: 'RL-89-650-R-NBR (Revestimento Borracha 8mm)',
     application: 'Esteira Transportadora 01 - Suporte Inferior e Intermediário da Esteira',
     description: 'Conjunto de rolos cilíndricos em tubo de aço carbono Schedule 40 usinado com revestimento vulcanizado de borracha nitrílica (NBR) com dureza 65 Shore A para absorção de impactos e redução de ruído. Eixo de aço trefilado retificado com rolamentos rígidos de esferas 6204-2RS blindados e vedação por labirinto de nylon.',
-    imageUrl: '',
+    imageUrl: 'https://images.unsplash.com/photo-1581092162384-8987c1d64718?auto=format&fit=crop&w=800&q=80',
     technicalDiagramUrl: '',
     diagramDescription: 'Esquema de Montagem nos Cavaletes: Encaixe do eixo fresado com rebaixo de 14mm para fixação por chavetas nas ranhuras das travessas da esteira. Balanceamento dinâmico classe ISO G6.3 para até 450 RPM.',
     specs: [

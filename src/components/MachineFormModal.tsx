@@ -17,6 +17,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { MachineItem, ComponentItem, LinkedComponentRule, UserRole } from '../types';
+import { TechnicalItemImage } from './TechnicalItemImage';
 
 interface MachineFormModalProps {
   isOpen: boolean;
@@ -348,6 +349,17 @@ export const MachineFormModal: React.FC<MachineFormModalProps> = ({
                     onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                     placeholder="https://... ou caminho de imagem"
                     className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+                <div className="mt-2 w-full max-w-xs aspect-video rounded-lg border border-slate-700 overflow-hidden bg-slate-950">
+                  <TechnicalItemImage
+                    src={formData.imageUrl}
+                    alt={formData.name || 'Preview da Máquina'}
+                    category="Máquina Industrial"
+                    tagCode={formData.tagCode}
+                    aspectRatio="16/9"
+                    showBlueprintToggle={true}
+                    allowZoom={false}
                   />
                 </div>
               </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Cog, Wrench, Zap, Shield, ChevronRight, QrCode, Layers, Ruler, MapPin } from 'lucide-react';
 import { MachineItem, ComponentItem, UserRole } from '../types';
+import { TechnicalItemImage } from './TechnicalItemImage';
 
 interface MachineCardProps {
   machine: MachineItem;
@@ -27,6 +28,22 @@ export const MachineCard: React.FC<MachineCardProps> = ({
 
   return (
     <div className="group relative bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-xl overflow-hidden shadow-lg transition-all duration-200 flex flex-col justify-between hover:shadow-amber-500/5">
+      {/* Illustrative Image Banner */}
+      <div 
+        onClick={() => onSelect(machine)}
+        className="relative w-full border-b border-slate-800/80 bg-slate-950 overflow-hidden cursor-pointer"
+      >
+        <TechnicalItemImage
+          src={machine.imageUrl}
+          alt={machine.name}
+          category="Máquina Industrial"
+          tagCode={machine.tagCode}
+          aspectRatio="16/9"
+          showBlueprintToggle={true}
+          allowZoom={false}
+        />
+      </div>
+
       {/* Top Banner & Tag */}
       <div className="p-4 border-b border-slate-800/80 bg-slate-900/60">
         <div className="flex items-center justify-between gap-2 mb-2">

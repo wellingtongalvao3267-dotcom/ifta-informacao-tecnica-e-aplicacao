@@ -46,6 +46,17 @@ export const storageService = {
             c.visibleToRoles = c.visibleToRoles.map(r => ((r as string) === 'MANUTENCAO' ? 'MECANICA' : r));
             changed = true;
           }
+          // Sanitizar caminhos antigos /src/assets/images/ para /assets/images/
+          if (c.imageUrl && c.imageUrl.startsWith('/src/assets/images/')) {
+            c.imageUrl = c.imageUrl.replace('/src/assets/images/', '/assets/images/');
+            changed = true;
+          }
+          // Atualizar imagens vazias com as imagens oficiais do INITIAL_COMPONENTS
+          const matchInit = INITIAL_COMPONENTS.find(ic => ic.id === c.id || ic.tagCode === c.tagCode);
+          if (matchInit && (!c.imageUrl || c.imageUrl === '')) {
+            c.imageUrl = matchInit.imageUrl;
+            changed = true;
+          }
         });
         // Garantir que os novos componentes da esteira (comp-008, comp-009, comp-010) estejam presentes
         INITIAL_COMPONENTS.forEach(initComp => {
