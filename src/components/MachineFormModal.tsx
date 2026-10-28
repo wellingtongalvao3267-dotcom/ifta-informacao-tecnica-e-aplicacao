@@ -1,0 +1,562 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  X, 
+  Save, 
+  Cog, 
+  Layers, 
+  Wrench, 
+  Zap, 
+  Shield, 
+  Search, 
+  Check, 
+  Sparkles,
+  Ruler, 
+  MapPin, 
+  FileText, 
+  Image as ImageIcon,
+  AlertCircle
+} from 'lucide-react';
+import { MachineItem, ComponentItem, LinkedComponentRule, UserRole } from '../types';
+
+interface MachineFormModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (machine: MachineItem) => void;
+  initialMachine?: MachineItem | null;
+  allComponents: ComponentItem[];
+}
+
+export const MachineFormModal: React.FC<MachineFormModalProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  initialMachine,
+  allComponents
+}) => {
+  const [formData, setFormData] = useState<Partial<MachineItem>>({
+    name: '',
+    tagCode: '',
+    sector: '',
+    dimensions: '',
+    description: '',
+    imageUrl: '',
+    status: 'OPERACIONAL',
+    linkedComponents: []
+  });
+
+  const [compSearch, setCompSearch] = useState('');
+  const [compCategoryFilter, setCompCategoryFilter] = useState('TODAS');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialMachine) {
+      setFormData({
+        ...initialMachine,
+        linkedComponents: initialMachine.linkedComponents ? [...initialMachine.linkedComponents] : []
+      });
+    } else {
+      setFormData({
+        name: '',
+        tagCode: `MAQ-EST-${String(Math.floor(Math.random() * 90) + 10)}`,
+        sector: 'Linha de Embalagem / Expedição',
+        dimensions: '12.500 mm (Comprimento) x 650 mm (Largura útil) x 900 mm (Altura)',
+        description: 'Máquina / Equipamento industrial para linha de produção contínua.',
+        imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
+        status: 'OPERACIONAL',
+        linkedComponents: []
+      });
+    }
+    setErrorMsg(null);
+  }, [initialMachine, isOpen]);
+
+  if (!isOpen) return null;
+
+  // Toggle whether a component is linked
+  const handleToggleComponentLink = (comp: ComponentItem) => {
+    const current = formData.linkedComponents || [];
+    const existsIndex = current.findIndex(c => c.componentId === comp.id);
+
+    if (existsIndex >= 0) {
+      // Remove
+      const updated = current.filter(c => c.componentId !== comp.id);
+      setFormData({ ...formData, linkedComponents: updated });
+    } else {
+      // Add with default roles based on component category
+      const isMec = ['mecânica', 'pneumática', 'hidráulica'].includes(comp.category.toLowerCase());
+      const isElet = ['elétrica', 'automação', 'instrumentação', 'painéis'].includes(comp.category.toLowerCase());
+
+      const allowedRoles: UserRole[] = ['DESENVOLVEDOR'];
+      if (isMec) allowedRoles.push('MECANICA');
+      if (isElet) allowedRoles.push('ELETRICA');
+      if (!isMec && !isElet) {
+        allowedRoles.push('MECANICA', 'ELETRICA');
+      }
+
+      const newRule: LinkedComponentRule = {
+        componentId: comp.id,
+        allowedRoles,
+        positionOrFunction: comp.application || `Item montado na máquina`
+      };
+
+      setFormData({
+        ...formData,
+        linkedComponents: [...current, newRule]
+      });
+    }
+  };
+
+  // Toggle role permission for a linked component
+  const handleToggleRole = (componentId: string, role: UserRole) => {
+    const current = formData.linkedComponents || [];
+    const updated = current.map(link => {
+      if (link.componentId !== componentId) return link;
+      const roles = new Set(link.allowedRoles);
+      // DESENVOLVEDOR always has access
+      roles.add('DESENVOLVEDOR');
+
+      if (roles.has(role)) {
+        roles.delete(role);
+      } else {
+        roles.add(role);
+      }
+
+      return {
+        ...link,
+        allowedRoles: Array.from(roles) as UserRole[]
+      };
+    });
+
+    setFormData({ ...formData, linkedComponents: updated });
+  };
+
+  // Update position or function text
+  const handleUpdatePosition = (componentId: string, text: string) => {
+    const current = formData.linkedComponents || [];
+    const updated = current.map(link => {
+      if (link.componentId !== componentId) return link;
+      return { ...link, positionOrFunction: text };
+    });
+    setFormData({ ...formData, linkedComponents: updated });
+  };
+
+  // Suggest automatic permissions by category
+  const handleAutoAssignPermissions = () => {
+    const current = formData.linkedComponents || [];
+    const updated = current.map(link => {
+      const comp = allComponents.find(c => c.id === link.componentId);
+      if (!comp) return link;
+
+      const isMec = ['mecânica', 'pneumática', 'hidráulica'].includes(comp.category.toLowerCase());
+      const isElet = ['elétrica', 'automação', 'instrumentação', 'painéis'].includes(comp.category.toLowerCase());
+
+      const allowed: UserRole[] = ['DESENVOLVEDOR'];
+      if (isMec) allowed.push('MECANICA');
+      if (isElet) allowed.push('ELETRICA');
+      if (!isMec && !isElet) {
+        allowed.push('MECANICA', 'ELETRICA');
+      }
+
+      return {
+        ...link,
+        allowedRoles: allowed
+      };
+    });
+
+    setFormData({ ...formData, linkedComponents: updated });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name?.trim()) {
+      setErrorMsg('O nome da máquina é obrigatório (ex: "Esteira transportadora 01").');
+      return;
+    }
+    if (!formData.tagCode?.trim()) {
+      setErrorMsg('A Tag / Código da máquina é obrigatória (ex: "MAQ-EST-01").');
+      return;
+    }
+
+    const cleanTag = formData.tagCode.trim().toUpperCase().replace(/\s+/g, '-');
+    const finalMachine: MachineItem = {
+      id: initialMachine?.id || `maq-${Date.now()}`,
+      name: formData.name.trim(),
+      tagCode: cleanTag,
+      sector: formData.sector?.trim() || 'Linha Geral de Manutenção',
+      dimensions: formData.dimensions?.trim() || 'Dimensões padrão conforme layout fabril',
+      description: formData.description?.trim() || '',
+      imageUrl: formData.imageUrl?.trim() || '',
+      qrCodeData: `IFTA:${cleanTag}`,
+      status: formData.status || 'OPERACIONAL',
+      linkedComponents: formData.linkedComponents || [],
+      createdAt: initialMachine?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    onSave(finalMachine);
+  };
+
+  const categories = Array.from(new Set(allComponents.map(c => c.category))).filter(Boolean);
+
+  const filteredComponents = allComponents.filter(comp => {
+    const matchesSearch = !compSearch.trim() || (
+      comp.name.toLowerCase().includes(compSearch.toLowerCase()) ||
+      comp.tagCode.toLowerCase().includes(compSearch.toLowerCase()) ||
+      comp.model.toLowerCase().includes(compSearch.toLowerCase()) ||
+      comp.category.toLowerCase().includes(compSearch.toLowerCase())
+    );
+    const matchesCat = compCategoryFilter === 'TODAS' || comp.category.toLowerCase() === compCategoryFilter.toLowerCase();
+    return matchesSearch && matchesCat;
+  });
+
+  const linkedCount = formData.linkedComponents?.length || 0;
+  const mecCount = formData.linkedComponents?.filter(c => c.allowedRoles.includes('MECANICA')).length || 0;
+  const eletCount = formData.linkedComponents?.filter(c => c.allowedRoles.includes('ELETRICA')).length || 0;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden my-6">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/80">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400">
+              <Cog className="w-5 h-5 animate-spin-slow" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-white">
+                  {initialMachine ? 'Editar Cadastro de Máquina' : 'Cadastrar Nova Máquina'}
+                </h2>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold uppercase">
+                  Desenvolvedor
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Adicione a máquina e selecione quais componentes serão liberados para Mecânica e Elétrica.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+          
+          {errorMsg && (
+            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center gap-2 text-xs text-rose-300">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
+          {/* Section 1: Dados Principais da Máquina */}
+          <div className="space-y-4">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono flex items-center gap-2">
+              <Cog className="w-4 h-4 text-amber-400" />
+              <span>1. Informações Gerais do Equipamento</span>
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Nome da Máquina *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name || ''}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Ex: Esteira Transportadora 01"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Código / Tag de Identificação *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.tagCode || ''}
+                  onChange={(e) => setFormData({ ...formData, tagCode: e.target.value })}
+                  placeholder="Ex: MAQ-EST-01"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-sm text-amber-400 font-mono uppercase focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Setor / Linha de Produção
+                </label>
+                <div className="relative">
+                  <MapPin className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
+                  <input
+                    type="text"
+                    value={formData.sector || ''}
+                    onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
+                    placeholder="Ex: Linha de Embalagem 01 / Expedição"
+                    className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Dimensões Técnicas (Exemplo do usuário)
+                </label>
+                <div className="relative">
+                  <Ruler className="w-4 h-4 absolute left-3 top-2.5 text-amber-400" />
+                  <input
+                    type="text"
+                    value={formData.dimensions || ''}
+                    onChange={(e) => setFormData({ ...formData, dimensions: e.target.value })}
+                    placeholder="Ex: 12.500 mm (C) x 650 mm (L) x 900 mm (A)"
+                    className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Descrição Técnica & Operacional
+                </label>
+                <textarea
+                  rows={2}
+                  value={formData.description || ''}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Descreva a finalidade, tipo de transporte, velocidade nominal, características mecânicas e elétricas..."
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500 leading-relaxed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  URL da Imagem da Máquina
+                </label>
+                <div className="relative">
+                  <ImageIcon className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
+                  <input
+                    type="text"
+                    value={formData.imageUrl || ''}
+                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                    placeholder="https://... ou caminho de imagem"
+                    className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Status Operacional
+                </label>
+                <select
+                  value={formData.status || 'OPERACIONAL'}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500"
+                >
+                  <option value="OPERACIONAL">OPERACIONAL (Em Funcionamento)</option>
+                  <option value="MANUTENCAO">EM MANUTENÇÃO (Parada Técnica)</option>
+                  <option value="ALERTA">EM ALERTA (Aguardando Reparo)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Vínculo de Peças & Definição de Perfis */}
+          <div className="space-y-4 pt-4 border-t border-slate-800">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-amber-400" />
+                  <span>2. Vincular Itens & Definir Acessos por Perfil</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Conforme solicitado: marque quais componentes pertencem a esta máquina e indique se a <strong>MECÂNICA</strong> ou <strong>ELÉTRICA</strong> terá acesso.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleAutoAssignPermissions}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-medium rounded-lg border border-slate-700 transition shrink-0 cursor-pointer"
+                title="Distribui automaticamente Mecânica x Elétrica com base nas categorias das peças"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Auto-distribuir Perfis</span>
+              </button>
+            </div>
+
+            {/* Linkage Summary Banner */}
+            <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-4">
+                <span>
+                  Total Vinculado: <strong className="text-white font-mono">{linkedCount}</strong>
+                </span>
+                <span className="text-sky-400 flex items-center gap-1">
+                  <Wrench className="w-3.5 h-3.5" />
+                  <span>Liberado para Mecânica: <strong className="font-mono text-white">{mecCount}</strong></span>
+                </span>
+                <span className="text-amber-400 flex items-center gap-1">
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>Liberado para Elétrica: <strong className="font-mono text-white">{eletCount}</strong></span>
+                </span>
+              </div>
+              <span className="text-[11px] text-slate-400 font-mono">
+                Desenvolvedor sempre tem acesso total
+              </span>
+            </div>
+
+            {/* Filter / Search inside Modal */}
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+              <div className="relative flex-1 w-full">
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
+                <input
+                  type="text"
+                  value={compSearch}
+                  onChange={(e) => setCompSearch(e.target.value)}
+                  placeholder="Filtrar peças cadastradas (ex: motor, fita, rolamento, mancal, rolos)..."
+                  className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <select
+                value={compCategoryFilter}
+                onChange={(e) => setCompCategoryFilter(e.target.value)}
+                className="w-full sm:w-auto px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-amber-500"
+              >
+                <option value="TODAS">Todas as Categorias</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Components Selection List */}
+            <div className="border border-slate-800 rounded-xl divide-y divide-slate-800/80 bg-slate-950 max-h-72 overflow-y-auto">
+              {filteredComponents.length > 0 ? (
+                filteredComponents.map((comp) => {
+                  const linkedRule = formData.linkedComponents?.find(c => c.componentId === comp.id);
+                  const isLinked = Boolean(linkedRule);
+                  const canMec = linkedRule?.allowedRoles.includes('MECANICA');
+                  const canElet = linkedRule?.allowedRoles.includes('ELETRICA');
+
+                  return (
+                    <div 
+                      key={comp.id}
+                      className={`p-3 transition-colors ${
+                        isLinked ? 'bg-amber-500/5' : 'hover:bg-slate-900/60'
+                      }`}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        
+                        {/* Checkbox to Link + Component Name/Tag */}
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          <input
+                            type="checkbox"
+                            id={`link-${comp.id}`}
+                            checked={isLinked}
+                            onChange={() => handleToggleComponentLink(comp)}
+                            className="mt-1 w-4 h-4 rounded text-amber-500 bg-slate-900 border-slate-700 focus:ring-amber-500 cursor-pointer"
+                          />
+                          <label htmlFor={`link-${comp.id}`} className="cursor-pointer min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-mono text-xs font-bold text-amber-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
+                                {comp.tagCode}
+                              </span>
+                              <span className="text-xs font-bold text-white truncate">
+                                {comp.name}
+                              </span>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                                {comp.category}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
+                              {comp.manufacturer} · {comp.model}
+                            </p>
+                          </label>
+                        </div>
+
+                        {/* Role Visibility Controls (Active if linked) */}
+                        {isLinked && (
+                          <div className="flex items-center gap-3 sm:border-l sm:border-slate-800 sm:pl-3 shrink-0">
+                            
+                            {/* MECANICA CHECKBOX */}
+                            <label className="flex items-center gap-1.5 text-xs text-sky-400 cursor-pointer select-none">
+                              <input
+                                type="checkbox"
+                                checked={canMec}
+                                onChange={() => handleToggleRole(comp.id, 'MECANICA')}
+                                className="w-3.5 h-3.5 rounded text-sky-500 bg-slate-900 border-slate-700 focus:ring-sky-500"
+                              />
+                              <Wrench className="w-3 h-3" />
+                              <span className="font-medium">Mecânica</span>
+                            </label>
+
+                            {/* ELETRICA CHECKBOX */}
+                            <label className="flex items-center gap-1.5 text-xs text-amber-400 cursor-pointer select-none">
+                              <input
+                                type="checkbox"
+                                checked={canElet}
+                                onChange={() => handleToggleRole(comp.id, 'ELETRICA')}
+                                className="w-3.5 h-3.5 rounded text-amber-500 bg-slate-900 border-slate-700 focus:ring-amber-500"
+                              />
+                              <Zap className="w-3 h-3" />
+                              <span className="font-medium">Elétrica</span>
+                            </label>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Position / Function input if linked */}
+                      {isLinked && (
+                        <div className="mt-2.5 pl-7">
+                          <input
+                            type="text"
+                            value={linkedRule?.positionOrFunction || ''}
+                            onChange={(e) => handleUpdatePosition(comp.id, e.target.value)}
+                            placeholder="Função / posição nesta máquina (ex: Tambor motriz, Rolete de retorno, Fita principal)..."
+                            className="w-full px-2.5 py-1 bg-slate-900 border border-slate-800 rounded text-xs text-slate-300 focus:outline-none focus:border-amber-500"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="p-6 text-center text-xs text-slate-500">
+                  Nenhuma peça encontrada com o filtro atual.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              className="flex items-center gap-2 px-5 py-2 text-xs font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-lg transition shadow-lg shadow-amber-500/20 cursor-pointer"
+            >
+              <Save className="w-4 h-4" />
+              <span>{initialMachine ? 'Salvar Alterações da Máquina' : 'Finalizar Cadastro da Máquina'}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};

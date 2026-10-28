@@ -1,9 +1,10 @@
-import { ComponentItem, UserAccount, AccessLog, CategoryAccessRule, UserRole } from '../types';
-import { INITIAL_USERS, INITIAL_COMPONENTS, INITIAL_CATEGORY_PERMISSIONS, INITIAL_LOGS } from '../data/initialData';
+import { ComponentItem, UserAccount, AccessLog, CategoryAccessRule, UserRole, MachineItem } from '../types';
+import { INITIAL_USERS, INITIAL_COMPONENTS, INITIAL_CATEGORY_PERMISSIONS, INITIAL_LOGS, INITIAL_MACHINES } from '../data/initialData';
 
 const STORAGE_KEYS = {
   USERS: 'ifta_users_v2',
   COMPONENTS: 'ifta_components_v2',
+  MACHINES: 'ifta_machines_v2',
   CATEGORY_PERMISSIONS: 'ifta_cat_perms_v2',
   LOGS: 'ifta_access_logs_v2',
   CURRENT_USER: 'ifta_active_session_v2',
@@ -46,8 +47,34 @@ export const storageService = {
             changed = true;
           }
         });
+        // Garantir que os novos componentes da esteira (comp-008, comp-009, comp-010) estejam presentes
+        INITIAL_COMPONENTS.forEach(initComp => {
+          if (!comps.some(c => c.id === initComp.id || c.tagCode === initComp.tagCode)) {
+            comps.push(initComp);
+            changed = true;
+          }
+        });
         if (changed) {
           localStorage.setItem(STORAGE_KEYS.COMPONENTS, JSON.stringify(comps));
+        }
+      } catch {}
+    }
+
+    // Inicialização de Máquinas e Equipamentos
+    if (!localStorage.getItem(STORAGE_KEYS.MACHINES)) {
+      localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(INITIAL_MACHINES));
+    } else {
+      try {
+        const storedMachines: MachineItem[] = JSON.parse(localStorage.getItem(STORAGE_KEYS.MACHINES) || '[]');
+        let changed = false;
+        INITIAL_MACHINES.forEach(initMaq => {
+          if (!storedMachines.some(m => m.id === initMaq.id || m.tagCode === initMaq.tagCode)) {
+            storedMachines.push(initMaq);
+            changed = true;
+          }
+        });
+        if (changed) {
+          localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(storedMachines));
         }
       } catch {}
     }
@@ -202,6 +229,56 @@ export const storageService = {
     });
   },
 
+  getMachines(): MachineItem[] {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.MACHINES);
+      return data ? JSON.parse(data) : INITIAL_MACHINES;
+    } catch {
+      return INITIAL_MACHINES;
+    }
+  },
+
+  saveMachines(machines: MachineItem[]) {
+    localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(machines));
+  },
+
+  saveMachine(machine: MachineItem): MachineItem {
+    const machines = this.getMachines();
+    const idx = machines.findIndex(m => m.id === machine.id);
+    const now = new Date().toISOString();
+
+    if (idx >= 0) {
+      machines[idx] = { ...machine, updatedAt: now };
+      this.saveMachines(machines);
+      return machines[idx];
+    } else {
+      const newMachine: MachineItem = {
+        ...machine,
+        id: machine.id || `maq-${Date.now()}`,
+        createdAt: now,
+        updatedAt: now
+      };
+      machines.unshift(newMachine);
+      this.saveMachines(machines);
+      return newMachine;
+    }
+  },
+
+  deleteMachine(id: string): boolean {
+    const machines = this.getMachines();
+    const filtered = machines.filter(m => m.id !== id);
+    if (filtered.length !== machines.length) {
+      this.saveMachines(filtered);
+      return true;
+    }
+    return false;
+  },
+
+  getMachineById(id: string): MachineItem | null {
+    const machines = this.getMachines();
+    return machines.find(m => m.id === id) || null;
+  },
+
   getLogs(): AccessLog[] {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.LOGS);
@@ -256,6 +333,7 @@ export const storageService = {
   resetAllData() {
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(INITIAL_USERS));
     localStorage.setItem(STORAGE_KEYS.COMPONENTS, JSON.stringify(INITIAL_COMPONENTS));
+    localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(INITIAL_MACHINES));
     localStorage.setItem(STORAGE_KEYS.CATEGORY_PERMISSIONS, JSON.stringify(INITIAL_CATEGORY_PERMISSIONS));
     localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(INITIAL_LOGS));
   },

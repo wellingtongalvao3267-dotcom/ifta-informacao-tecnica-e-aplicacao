@@ -1,4 +1,4 @@
-import { ComponentItem, UserAccount, CategoryAccessRule } from '../types';
+import { ComponentItem, UserAccount, CategoryAccessRule, MachineItem } from '../types';
 
 export const INITIAL_USERS: UserAccount[] = [
   {
@@ -511,6 +511,275 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     visibleToRoles: ['DESENVOLVEDOR', 'ELETRICA'],
     createdAt: '2026-03-25T11:00:00Z',
     updatedAt: '2026-10-27T07:15:00Z'
+  },
+  {
+    id: 'comp-008',
+    tagCode: 'MANC-MEC-104',
+    name: 'Mancal Bipartido de Ferro Fundido com Graxeira',
+    category: 'Mecânica',
+    manufacturer: 'SKF / Linha SNL',
+    model: 'SNL 512-610 + Retentor V-Ring',
+    application: 'Esteira Transportadora 01 - Eixos dos Tambores de Tração e Retorno',
+    description: 'Caixa de mancal bipartida em ferro fundido cinzento de alta rigidez estrutural com graxeira hidráulica tipo bico cônico integrada para lubrificação periódica. Projetada para rolamentos autocompensadores de rolos ou esferas montados sobre bucha de fixação com vedação labirinto resistente a pó abrasivo.',
+    imageUrl: '',
+    technicalDiagramUrl: '',
+    diagramDescription: 'Esquema de Montagem e Lubrificação: Fixação na base por 2 parafusos M16 classe 8.8 (torque 130 N·m). Graxeira M10x1 centralizada no topo da tampa. Espaço para relubrificação com capacidade de graxa inicial de 120g.',
+    specs: [
+      { label: 'Tipo de Mancal', value: 'Bipartido para rolamento com bucha' },
+      { label: 'Eixo Suportado', value: 'Ø 50 mm a Ø 60 mm' },
+      { label: 'Rolamento Compatível', value: 'SKF 22212 EK com Bucha H 312' },
+      { label: 'Graxeira de Lubrificação', value: 'Rosca M10x1 tipo botão reto' },
+      { label: 'Material da Caixa', value: 'Ferro fundido cinzento GG25' },
+      { label: 'Tipo de Vedação', value: 'Labirinto metálico e anel V-Ring' },
+      { label: 'Torque Parafusos da Tampa', value: '80 N·m (Parafusos M12)' },
+      { label: 'Carga Radial Máxima', value: '62 kN' }
+    ],
+    maintenanceIntervalHours: 2000,
+    maintenanceGuide: [
+      {
+        step: 1,
+        title: 'Higienização do Bico da Graxeira',
+        instruction: 'Limpar rigorosamente o bico da graxeira antes de acoplar a pistola de engraxamento para evitar introdução de sujeira no alojamento.',
+        torqueOrMeasure: 'Limpeza com pano seco'
+      },
+      {
+        step: 2,
+        title: 'Engraxamento Periódico',
+        instruction: 'Injetar graxa de lítio com bissulfeto de molibdênio lentamente enquanto o eixo estiver em rotação manual lenta.',
+        torqueOrMeasure: '20g a 25g de graxa'
+      },
+      {
+        step: 3,
+        title: 'Inspeção de Parafusos de Fixação da Base',
+        instruction: 'Reapertar os parafusos de sustentação da sapata do mancal contra as longarinas metálicas da esteira.',
+        torqueOrMeasure: '130 N·m'
+      }
+    ],
+    commonFailures: [
+      {
+        symptom: 'Excesso de aquecimento na caixa (>75°C)',
+        probableCause: 'Volume excessivo de graxa gerando atrito hidráulico interno ou desalinhamento angular do tambor.',
+        correctiveAction: 'Retirar o bujão inferior de alívio para drenar o excesso de graxa e alinhar a estrutura com laser.'
+      },
+      {
+        symptom: 'Vibração excessiva na carcaça do mancal',
+        probableCause: 'Desgaste da pista do rolamento interno ou folga de fixação na longarina.',
+        correctiveAction: 'Aferir a vibração com acelerômetro e inspecionar a folga radial interna.'
+      }
+    ],
+    manualFileName: 'Manual_SKF_Caixas_Mancal_SNL_500.pdf',
+    manualSummary: 'Dimensões nominais de montagem, códigos de peças sobressalentes, anéis de vedação e tipos de lubrificantes aprovados.',
+    qrCodeData: 'IFTA:MANC-MEC-104',
+    visibleToRoles: ['DESENVOLVEDOR', 'MECANICA'],
+    createdAt: '2026-03-26T09:00:00Z',
+    updatedAt: '2026-10-27T08:00:00Z'
+  },
+  {
+    id: 'comp-009',
+    tagCode: 'FITA-MEC-055',
+    name: 'Modelo de Fita de Transporte Modular Termoplástica',
+    category: 'Mecânica',
+    manufacturer: 'Habasit / Rexnord',
+    model: 'M5010 Flat Top 2" Pitch - Acetal Branco Sanitário',
+    application: 'Esteira Transportadora 01 - Plataforma de Transporte Contínuo de Embalagens',
+    description: 'Fita transportadora modular de esteira contínua montada em módulos plásticos de polioximetileno (POM / Acetal) de alta resistência ao desgaste e baixo coeficiente de atrito. Superfície plana fechada (Flat Top) com pinos de articulação em polipropileno de alta durabilidade e engrenagens dentadas bipartidas de tração positiva.',
+    imageUrl: '',
+    technicalDiagramUrl: '',
+    diagramDescription: 'Esquema de Montagem da Fita: Pinos de retenção travados sem cabeça nas extremidades. Sentido de avanço demarcado por setas nos elos modulares. Engrenagens tracionadas no eixo quadrado motriz de 40x40 mm.',
+    specs: [
+      { label: 'Passo da Fita (Pitch)', value: '50.8 mm (2 polegadas)' },
+      { label: 'Largura Útil Nominal', value: '650 mm montagem modular' },
+      { label: 'Material dos Módulos', value: 'Polioximetileno (POM / Acetal Branco)' },
+      { label: 'Material dos Pinos', value: 'PBT / Polipropileno virgem' },
+      { label: 'Resistência à Tração Admissível', value: '38.000 N/m de largura' },
+      { label: 'Faixa de Temperatura', value: '-40°C a +90°C' },
+      { label: 'Espessura Nominal da Fita', value: '16.0 mm' },
+      { label: 'Coeficiente de Atrito sobre Aço Inox', value: '0.18' }
+    ],
+    maintenanceIntervalHours: 1500,
+    maintenanceGuide: [
+      {
+        step: 1,
+        title: 'Verificação da Tensão e Caimento de Retorno (Catenária)',
+        instruction: 'Medir o caimento livre da fita na volta inferior de retorno entre os rolos de apoio. Deve apresentar flecha suave sem tracionamento forçado.',
+        torqueOrMeasure: 'Flecha recomendada: 50 a 75 mm'
+      },
+      {
+        step: 2,
+        title: 'Inspeção dos Pinos de Travamento',
+        instruction: 'Conferir se nenhum pino lateral de articulação deslizou para fora da lateral da fita contra a guia metálica da estrutura.',
+        torqueOrMeasure: 'Inspeção visual lateral'
+      },
+      {
+        step: 3,
+        title: 'Lavagem e Higienização Técnica',
+        instruction: 'Lavar com água pressurizada e detergente neutro industrial sem uso de ácidos fortes que degradem a estrutura do acetal.',
+        torqueOrMeasure: 'Pressão máxima da água: 5 bar'
+      }
+    ],
+    commonFailures: [
+      {
+        symptom: 'Fita patinando ou saltando dentes da engrenagem de tração',
+        probableCause: 'Alongamento dos elos por carga excessiva ou folga no esticador de retorno.',
+        correctiveAction: 'Remover uma fileira de elos (2 polegadas) para reduzir o comprimento e regular o fuso esticador.'
+      },
+      {
+        symptom: 'Módulos quebrados ou desgastados assimetricamente',
+        probableCause: 'Presença de corpos estranhos sob a esteira ou perfil de desgaste de UHMW danificado na base.',
+        correctiveAction: 'Substituir os módulos danificados sacando o pino lateral com punção e inspecionar os perfis deslizantes.'
+      }
+    ],
+    manualFileName: 'Manual_Instalacao_Esteiras_Modulares_Habasit.pdf',
+    manualSummary: 'Instruções para emenda de fita, cálculo de potência de tração e tabela de espaçamento de engrenagens sprockets.',
+    qrCodeData: 'IFTA:FITA-MEC-055',
+    visibleToRoles: ['DESENVOLVEDOR', 'MECANICA'],
+    createdAt: '2026-03-26T10:00:00Z',
+    updatedAt: '2026-10-27T08:05:00Z'
+  },
+  {
+    id: 'comp-010',
+    tagCode: 'ROLO-MEC-088',
+    name: 'Conjunto de Rolos de Carga e Retorno Emborrachados Ø89mm',
+    category: 'Mecânica',
+    manufacturer: 'Martin Sprocket / Linha Transmecânica',
+    model: 'RL-89-650-R-NBR (Revestimento Borracha 8mm)',
+    application: 'Esteira Transportadora 01 - Suporte Inferior e Intermediário da Esteira',
+    description: 'Conjunto de rolos cilíndricos em tubo de aço carbono Schedule 40 usinado com revestimento vulcanizado de borracha nitrílica (NBR) com dureza 65 Shore A para absorção de impactos e redução de ruído. Eixo de aço trefilado retificado com rolamentos rígidos de esferas 6204-2RS blindados e vedação por labirinto de nylon.',
+    imageUrl: '',
+    technicalDiagramUrl: '',
+    diagramDescription: 'Esquema de Montagem nos Cavaletes: Encaixe do eixo fresado com rebaixo de 14mm para fixação por chavetas nas ranhuras das travessas da esteira. Balanceamento dinâmico classe ISO G6.3 para até 450 RPM.',
+    specs: [
+      { label: 'Diâmetro Externo Total', value: 'Ø 89 mm (incluindo emborrachamento)' },
+      { label: 'Comprimento da Face do Rolo', value: '650 mm' },
+      { label: 'Espessura do Revestimento de Borracha', value: '8.0 mm Vulcanizada a Quente' },
+      { label: 'Dureza da Borracha', value: '65 Shore A' },
+      { label: 'Rolamento Interno', value: '2x 6204-2RS (Lubrificação permanente)' },
+      { label: 'Diâmetro do Eixo', value: 'Ø 20 mm com pontas fresadas de 14 mm' },
+      { label: 'Capacidade de Carga por Rolo', value: '180 kg' },
+      { label: 'Excentricidade Máxima (Batimento)', value: '< 0.35 mm' }
+    ],
+    maintenanceIntervalHours: 3000,
+    maintenanceGuide: [
+      {
+        step: 1,
+        title: 'Verificação da Rotação Livre sem Travamento',
+        instruction: 'Girar manualmente cada rolo de apoio com a esteira parada para constatar ausência de atrito ou aspereza nos rolamentos.',
+        torqueOrMeasure: 'Giro suave e silencioso'
+      },
+      {
+        step: 2,
+        title: 'Medição do Desgaste da Borracha',
+        instruction: 'Aferir a espessura da camada de borracha na região central onde ocorre maior contato de carga.',
+        torqueOrMeasure: 'Espessura mínima: 3.0 mm'
+      },
+      {
+        step: 3,
+        title: 'Alinhamento dos Cavaletes de Suporte',
+        instruction: 'Verificar perpendicularidade dos rolos em relação à linha de centro da esteira para evitar desvio lateral de esteira.',
+        torqueOrMeasure: 'Alinhamento a 90° com esquadro'
+      }
+    ],
+    commonFailures: [
+      {
+        symptom: 'Rolo travado com desgaste em faceta plana na borracha',
+        probableCause: 'Entrada de água ou produto corrosivo lavando a graxa do rolamento ou travamento por sujeira sob o eixo.',
+        correctiveAction: 'Substituir o rolo travado imediatamente para não queimar a fita e conferir os anéis de vedação.'
+      },
+      {
+        symptom: 'Descolamento do revestimento emborrachado',
+        probableCause: 'Contaminação contínua por solventes químicos ou impacto excessivo de produtos em queda livre.',
+        correctiveAction: 'Trocar o rolo por modelo com revestimento em poliuretano de alta resistência mecânica.'
+      }
+    ],
+    manualFileName: 'Catalogo_Rolos_Transportadores_Industriais.pdf',
+    manualSummary: 'Tabela de seleção de rolos de carga, rolos guias e rolos de retorno com guias de diâmetro e peso admissível.',
+    qrCodeData: 'IFTA:ROLO-MEC-088',
+    visibleToRoles: ['DESENVOLVEDOR', 'MECANICA'],
+    createdAt: '2026-03-26T11:00:00Z',
+    updatedAt: '2026-10-27T08:10:00Z'
+  }
+];
+
+export const INITIAL_MACHINES: MachineItem[] = [
+  {
+    id: 'maq-001',
+    tagCode: 'MAQ-EST-01',
+    name: 'Esteira Transportadora 01',
+    sector: 'Linha de Embalagem 01 / Expedição',
+    description: 'Esteira transportadora horizontal automatizada para transporte contínuo, pesagem e encaminhamento de embalagens e caixas secundárias. Equipada com motoredutor trifásico de alto rendimento acionado por inversor vetorial, esteira modular sanitária com baixo coeficiente de atrito, rolos emborrachados balanceados, mancais com graxeira externa e sensores industriais para monitoramento de fluxo.',
+    dimensions: '12.500 mm (Comprimento) x 650 mm (Largura útil) x 900 mm (Altura operacional com niveladores reguláveis)',
+    imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
+    qrCodeData: 'IFTA:MAQ-EST-01',
+    status: 'OPERACIONAL',
+    linkedComponents: [
+      {
+        componentId: 'comp-001',
+        allowedRoles: ['DESENVOLVEDOR', 'ELETRICA'],
+        positionOrFunction: 'Motoredutor Elétrico de Tração Principal (7.5 kW / 10 CV)'
+      },
+      {
+        componentId: 'comp-002',
+        allowedRoles: ['DESENVOLVEDOR', 'ELETRICA'],
+        positionOrFunction: 'Inversor de Frequência Sinamics G120C (Painel CCM-01 / Controle de Velocidade)'
+      },
+      {
+        componentId: 'comp-004',
+        allowedRoles: ['DESENVOLVEDOR', 'ELETRICA'],
+        positionOrFunction: 'Sensor de Proximidade Indutivo (Contagem de Peças e Fim de Curso)'
+      },
+      {
+        componentId: 'comp-005',
+        allowedRoles: ['DESENVOLVEDOR', 'MECANICA'],
+        positionOrFunction: 'Rolamentos Autocompensadores SKF 22212 (Tambor de Tração e Retorno)'
+      },
+      {
+        componentId: 'comp-008',
+        allowedRoles: ['DESENVOLVEDOR', 'MECANICA'],
+        positionOrFunction: 'Mancais Bipartidos com Graxeira SNL 512 (Apoio dos Eixos dos Tambores)'
+      },
+      {
+        componentId: 'comp-009',
+        allowedRoles: ['DESENVOLVEDOR', 'MECANICA'],
+        positionOrFunction: 'Modelo de Fita de Transporte Modular Flat Top 2" (Largura 650 mm)'
+      },
+      {
+        componentId: 'comp-010',
+        allowedRoles: ['DESENVOLVEDOR', 'MECANICA'],
+        positionOrFunction: 'Conjunto de Rolos de Carga e Retorno Emborrachados Ø89 mm'
+      }
+    ],
+    createdAt: '2026-03-26T12:00:00Z',
+    updatedAt: '2026-10-27T09:00:00Z'
+  },
+  {
+    id: 'maq-002',
+    tagCode: 'MAQ-ENC-02',
+    name: 'Encartuchadora Automática MK-02',
+    sector: 'Setor de Embalagem Secundária - Sala Limpa',
+    description: 'Máquina automática de encartuchamento contínuo com alimentação de cartuchos dobrados por ventosas de vácuo, introdução de frascos por esteira sincronizada e fechamento por cola quente (Hot Melt). Comanda atuadores pneumáticos e servomotores digitais com proteções de segurança integradas.',
+    dimensions: '4.800 mm (Comprimento) x 1.650 mm (Largura) x 2.100 mm (Altura)',
+    imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80',
+    qrCodeData: 'IFTA:MAQ-ENC-02',
+    status: 'OPERACIONAL',
+    linkedComponents: [
+      {
+        componentId: 'comp-003',
+        allowedRoles: ['DESENVOLVEDOR', 'MECANICA'],
+        positionOrFunction: 'Bloco Manifold de Válvulas Solenoide Festo VTUG (Atuadores Pneumáticos)'
+      },
+      {
+        componentId: 'comp-004',
+        allowedRoles: ['DESENVOLVEDOR', 'ELETRICA'],
+        positionOrFunction: 'Sensor Indutivo Telemecanique XS612 (Sincronismo de Alimentação)'
+      },
+      {
+        componentId: 'comp-007',
+        allowedRoles: ['DESENVOLVEDOR', 'ELETRICA'],
+        positionOrFunction: 'Disjuntor-Motor TeSys GV2ME20 (Proteção da Bomba de Vácuo do Alimentador)'
+      }
+    ],
+    createdAt: '2026-03-27T10:00:00Z',
+    updatedAt: '2026-10-27T09:15:00Z'
   }
 ];
 

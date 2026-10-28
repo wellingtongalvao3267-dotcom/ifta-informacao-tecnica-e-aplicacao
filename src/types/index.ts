@@ -68,3 +68,24 @@ export interface CategoryAccessRule {
   category: string;
   allowedRoles: UserRole[];
 }
+
+export interface LinkedComponentRule {
+  componentId: string;
+  allowedRoles: UserRole[]; // e.g. ['MECANICA'] or ['ELETRICA'] or both
+  positionOrFunction?: string; // e.g. "Acionamento principal", "Rolamento do tambor motriz"
+}
+
+export interface MachineItem {
+  id: string;
+  tagCode: string; // e.g. "MAQ-EST-01"
+  name: string; // e.g. "Esteira Transportadora 01"
+  sector: string; // e.g. "Linha de Embalagem 01 / Expedição"
+  description: string;
+  dimensions: string; // e.g. "12.50m (Comprimento) x 650mm (Largura útil) x 900mm (Altura)"
+  imageUrl?: string;
+  qrCodeData: string;
+  status?: 'OPERACIONAL' | 'MANUTENCAO' | 'ALERTA';
+  linkedComponents: LinkedComponentRule[];
+  createdAt: string;
+  updatedAt: string;
+}
