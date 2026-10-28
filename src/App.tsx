@@ -17,7 +17,7 @@ import { LoginScreen } from './components/LoginScreen';
 import { Navbar } from './components/Navbar';
 import { ComponentCard } from './components/ComponentCard';
 import { ComponentDetailModal } from './components/ComponentDetailModal';
-import { QrScannerModal } from './components/QrScannerModal';
+import { QrScannerModal, matchComponentFromQr } from './components/QrScannerModal';
 import { AdminPanel } from './components/AdminPanel';
 import { ComponentFormModal } from './components/ComponentFormModal';
 import { EditProfileModal } from './components/EditProfileModal';
@@ -111,25 +111,33 @@ export default function App() {
 
   const handleScanMatch = (tagCode: string) => {
     setIsQrScannerOpen(false);
-    const match = components.find(c => c.tagCode.toUpperCase() === tagCode.toUpperCase());
+    // 1. Check in user-visible components
+    const match = matchComponentFromQr(tagCode, components);
     if (match) {
       handleSelectComponent(match, 'specs');
       if (currentUser) {
         storageService.addLog(
           currentUser.username,
           currentUser.role,
-          `Leitura QR Bem-sucedida: ${tagCode}`,
+          `Leitura QR Bem-sucedida: ${match.tagCode}`,
           `Componente ${match.name} localizado no estoque.`
         );
       }
-    } else {
-      // Check if it exists in total database even if not visible in current role
-      const all = storageService.getComponents();
-      const existInAll = all.find(c => c.tagCode.toUpperCase() === tagCode.toUpperCase());
-      if (existInAll) {
-        alert(`O componente ${tagCode} existe no banco de dados, porém não está liberado para o perfil ${currentUser?.role}. Solicite acesso ao Desenvolvedor.`);
-      } else {
-        alert(`Nenhum componente com o código ${tagCode} foi localizado.`);
+      return;
+    }
+
+    // 2. Check in all components
+    const all = storageService.getComponents();
+    const existInAll = matchComponentFromQr(tagCode, all);
+    if (existInAll) {
+      handleSelectComponent(existInAll, 'specs');
+      if (currentUser) {
+        storageService.addLog(
+          currentUser.username,
+          currentUser.role,
+          `Leitura QR de Outro Setor: ${existInAll.tagCode}`,
+          `Item ${existInAll.name} (${existInAll.category}) aberto para consulta técnica.`
+        );
       }
     }
   };
@@ -419,6 +427,40 @@ export default function App() {
         onClose={() => setIsQrScannerOpen(false)}
         onScanMatch={handleScanMatch}
         components={components}
+        allComponents={storageService.getComponents()}
+        currentUserRole={currentUser.role}
+        onAddNewWithCode={(code) => {
+          setIsQrScannerOpen(false);
+          setEditingComponent({
+            id: '',
+            tagCode: code.toUpperCase().replace(/\s+/g, '-'),
+            name: '',
+            category: 'Mecânica',
+            manufacturer: '',
+            model: '',
+            application: '',
+            description: '',
+            imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+            qrCodeData: code,
+            specs: [
+              { label: 'Tensão', value: '220/380 V' },
+              { label: 'Potência', value: '7.5 kW' }
+            ],
+            maintenanceGuide: [
+              { step: 1, title: 'Inspeção Visual', instruction: 'Verificar alinhamento e fixação.', torqueOrMeasure: 'Visual' }
+            ],
+            commonFailures: [
+              { symptom: 'Ruído anormal', probableCause: 'Falta de lubrificação', correctiveAction: 'Aplicar lubrificante' }
+            ],
+            manualFileName: 'manual_tecnico.pdf',
+            manualSummary: 'Manual de operação e manutenção técnica.',
+            maintenanceIntervalHours: 4000,
+            visibleToRoles: ['DESENVOLVEDOR', 'MECANICA', 'ELETRICA'],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          });
+          setIsFormModalOpen(true);
+        }}
       />
 
       {/* Developer Admin Panel */}
