@@ -19,11 +19,13 @@ import {
   Camera,
   Trash2,
   Loader2,
-  QrCode
+  QrCode,
+  Info,
+  CheckCircle2
 } from 'lucide-react';
 import { MachineItem, ComponentItem, LinkedComponentRule, UserRole } from '../types';
 import { TechnicalItemImage } from './TechnicalItemImage';
-import { compressImageFile } from '../utils/imageUtils';
+import { compressImageDetailed, formatBytes, CompressionResult } from '../utils/imageUtils';
 import { storageService } from '../services/storageService';
 
 interface MachineFormModalProps {
@@ -57,6 +59,7 @@ export const MachineFormModal: React.FC<MachineFormModalProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
+  const [compressionInfo, setCompressionInfo] = useState<CompressionResult | null>(null);
 
   const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -66,8 +69,10 @@ export const MachineFormModal: React.FC<MachineFormModalProps> = ({
     setImageUploadError(null);
 
     try {
-      const optimizedDataUrl = await compressImageFile(file, 1280, 1280, 0.85);
-      setFormData(prev => ({ ...prev, imageUrl: optimizedDataUrl }));
+      // Compressão acelerada por hardware: 960x720 WebP/JPEG com altíssima nitidez e menos de 70KB
+      const result = await compressImageDetailed(file, 960, 720, 0.78);
+      setFormData(prev => ({ ...prev, imageUrl: result.dataUrl }));
+      setCompressionInfo(result);
     } catch (err: any) {
       console.error('Erro ao carregar imagem do dispositivo:', err);
       setImageUploadError(err?.message || 'Não foi possível carregar a imagem do dispositivo.');
@@ -425,7 +430,10 @@ export const MachineFormModal: React.FC<MachineFormModalProps> = ({
                   {formData.imageUrl && (
                     <button
                       type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, imageUrl: '' }));
+                        setCompressionInfo(null);
+                      }}
                       className="inline-flex items-center gap-1.5 text-xs text-rose-400 hover:text-rose-300 px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-colors w-fit"
                       title="Remover imagem atual"
                     >
@@ -470,9 +478,43 @@ export const MachineFormModal: React.FC<MachineFormModalProps> = ({
                   {isProcessingImage && (
                     <span className="text-xs text-amber-400 flex items-center gap-1.5 font-medium animate-pulse">
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Processando e otimizando imagem...</span>
+                      <span>Otimizando imagem instantaneamente...</span>
                     </span>
                   )}
+                </div>
+
+                {/* Métricas de Otimização da Imagem Carregada */}
+                {compressionInfo && (
+                  <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25 flex flex-wrap items-center justify-between gap-2 text-xs text-emerald-300">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>
+                        <strong>Foto otimizada com sucesso:</strong> de {formatBytes(compressionInfo.originalSizeBytes)} para apenas <strong>{formatBytes(compressionInfo.compressedSizeBytes)}</strong> ({compressionInfo.width}×{compressionInfo.height} px · {compressionInfo.format.toUpperCase()})
+                      </span>
+                    </div>
+                    <span className="font-mono text-[11px] bg-emerald-500/20 px-2 py-0.5 rounded text-emerald-300 font-bold">
+                      -{compressionInfo.savedPercentage}% mais leve
+                    </span>
+                  </div>
+                )}
+
+                {/* Caixa de Sugestão e Dica Técnica sobre Formatos e Tamanhos */}
+                <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                  <div className="flex items-center gap-1.5 text-amber-400 font-semibold text-xs">
+                    <Info className="w-3.5 h-3.5 shrink-0" />
+                    <span>Sugestão de Formato e Resolução Ideal:</span>
+                  </div>
+                  <ul className="list-disc pl-4 space-y-0.5 leading-relaxed text-slate-300">
+                    <li>
+                      <strong>Formatos mais leves:</strong> <code>JPG / JPEG</code> ou <code>WebP</code> (evite PNG sem transparência, que costuma ser até 10x mais pesado).
+                    </li>
+                    <li>
+                      <strong>Resolução recomendada:</strong> <strong>800×600</strong> a <strong>1200×900 pixels</strong> (proporção 4:3 ou 16:9). Fotos brutas de câmeras de celular têm 4000×3000 (12MP a 64MP) e pesam 15MB+.
+                    </li>
+                    <li>
+                      <strong>Compressão Automática:</strong> O aplicativo agora pré-redimensiona e converte automaticamente suas fotos para formato WebP leve (~50 KB) em fração de segundo.
+                    </li>
+                  </ul>
                 </div>
 
                 {/* Opção alternativa: URL de imagem */}

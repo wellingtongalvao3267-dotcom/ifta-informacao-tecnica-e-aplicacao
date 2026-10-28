@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { X, Save, Plus, Trash2, Upload, AlertCircle, Camera, Loader2, QrCode, Sparkles } from 'lucide-react';
+import { X, Save, Plus, Trash2, Upload, AlertCircle, Camera, Loader2, QrCode, Sparkles, Info, CheckCircle2 } from 'lucide-react';
 import { ComponentItem, TechnicalSpec, MaintenanceStep, CommonFailure, UserRole } from '../types';
 import { INITIAL_CATEGORIES } from '../data/initialData';
 import { TechnicalItemImage } from './TechnicalItemImage';
-import { compressImageFile } from '../utils/imageUtils';
+import { compressImageDetailed, formatBytes, CompressionResult } from '../utils/imageUtils';
 import { storageService } from '../services/storageService';
 
 interface ComponentFormModalProps {
@@ -67,16 +67,18 @@ export const ComponentFormModal: React.FC<ComponentFormModalProps> = ({
   if (!isOpen) return null;
 
   const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [compressionInfo, setCompressionInfo] = useState<CompressionResult | null>(null);
 
-  // Image file handler with compression
+  // Image file handler with accelerated compression
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsProcessingImage(true);
     try {
-      const optimized = await compressImageFile(file, 1280, 1280, 0.85);
-      setImageUrl(optimized);
+      const result = await compressImageDetailed(file, 960, 720, 0.78);
+      setImageUrl(result.dataUrl);
+      setCompressionInfo(result);
     } catch (err) {
       console.error('Erro ao comprimir imagem do componente:', err);
     } finally {
@@ -429,6 +431,26 @@ export const ComponentFormModal: React.FC<ComponentFormModalProps> = ({
                     placeholder="Ou cole a URL / caminho da imagem"
                     className="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs text-slate-100 focus:border-amber-500 focus:outline-none"
                   />
+                </div>
+
+                {compressionInfo && (
+                  <div className="mb-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between text-[11px] text-emerald-300">
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>{formatBytes(compressionInfo.originalSizeBytes)} ➔ {formatBytes(compressionInfo.compressedSizeBytes)} ({compressionInfo.format.toUpperCase()})</span>
+                    </span>
+                    <span className="font-mono text-emerald-400 font-bold">-{compressionInfo.savedPercentage}%</span>
+                  </div>
+                )}
+
+                <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-[11px] text-slate-400 space-y-1 mb-2">
+                  <span className="text-amber-400 font-semibold flex items-center gap-1">
+                    <Info className="w-3 h-3" />
+                    <span>Dica de Tamanho & Formato:</span>
+                  </span>
+                  <p className="text-[10px] text-slate-400 leading-normal">
+                    Formatos <strong>JPG</strong> ou <strong>WebP</strong> (800×600 a 1200×900) carregam instantaneamente. O app otimiza fotos pesadas automaticamente.
+                  </p>
                 </div>
                 <div className="w-full max-w-xs aspect-[4/3] rounded-lg border border-slate-700 overflow-hidden bg-slate-950">
                   <TechnicalItemImage
