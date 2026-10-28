@@ -85,12 +85,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           
           {/* Canto superior direito: Opção para escanear QR Code */}
           <button
+            type="button"
             onClick={onOpenQrScanner}
             title="Escanear QR Code da Peça"
-            className="flex items-center gap-1.5 px-3 py-1.5 md:py-2 text-xs font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 active:scale-[0.98] rounded-lg transition shadow-md shadow-amber-500/15 whitespace-nowrap"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 md:px-3.5 md:py-2 text-xs font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 active:scale-[0.97] rounded-lg transition shadow-md shadow-amber-500/20 whitespace-nowrap cursor-pointer ring-1 ring-amber-300/50"
           >
             <QrCode className="w-4 h-4 shrink-0" />
-            <span className="hidden sm:inline">Escanear QR Code</span>
+            <span className="inline font-bold">Escanear QR</span>
           </button>
 
           {/* Admin Panel Toggle (for DESENVOLVEDOR only) */}

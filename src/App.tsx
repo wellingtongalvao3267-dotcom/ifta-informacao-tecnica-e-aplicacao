@@ -8,7 +8,8 @@ import {
   Info, 
   SlidersHorizontal,
   Layers,
-  ArrowUpDown
+  ArrowUpDown,
+  QrCode
 } from 'lucide-react';
 import { ComponentItem, UserAccount, UserRole } from './types';
 import { storageService } from './services/storageService';
@@ -111,8 +112,9 @@ export default function App() {
 
   const handleScanMatch = (tagCode: string) => {
     setIsQrScannerOpen(false);
-    // 1. Check in user-visible components
-    const match = matchComponentFromQr(tagCode, components);
+    // Busca prioritária em todo o catálogo da fábrica para garantir acesso imediato às especificações
+    const all = storageService.getComponents();
+    const match = matchComponentFromQr(tagCode, all.length > 0 ? all : components);
     if (match) {
       handleSelectComponent(match, 'specs');
       if (currentUser) {
@@ -120,25 +122,16 @@ export default function App() {
           currentUser.username,
           currentUser.role,
           `Leitura QR Bem-sucedida: ${match.tagCode}`,
-          `Componente ${match.name} localizado no estoque.`
+          `Especificações técnicas de ${match.name} abertas para consulta.`
         );
       }
       return;
     }
 
-    // 2. Check in all components
-    const all = storageService.getComponents();
-    const existInAll = matchComponentFromQr(tagCode, all);
-    if (existInAll) {
-      handleSelectComponent(existInAll, 'specs');
-      if (currentUser) {
-        storageService.addLog(
-          currentUser.username,
-          currentUser.role,
-          `Leitura QR de Outro Setor: ${existInAll.tagCode}`,
-          `Item ${existInAll.name} (${existInAll.category}) aberto para consulta técnica.`
-        );
-      }
+    // Fallback secundário na lista filtrada atual
+    const fallbackMatch = matchComponentFromQr(tagCode, components);
+    if (fallbackMatch) {
+      handleSelectComponent(fallbackMatch, 'specs');
     }
   };
 
@@ -406,6 +399,18 @@ export default function App() {
           <span>Engenharia & Manutenção 2026</span>
         </div>
       </footer>
+
+      {/* Floating Action Button (FAB) para Escanear QR Code em Dispositivos Móveis */}
+      <div className="fixed bottom-5 right-5 z-40 sm:hidden">
+        <button
+          type="button"
+          onClick={handleOpenQrScanner}
+          className="flex items-center gap-2 px-4 py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-full shadow-2xl shadow-amber-500/30 active:scale-95 transition-all border-2 border-slate-950 cursor-pointer"
+        >
+          <QrCode className="w-4 h-4" />
+          <span>Escanear QR</span>
+        </button>
+      </div>
 
       {/* Detail Modal */}
       <ComponentDetailModal

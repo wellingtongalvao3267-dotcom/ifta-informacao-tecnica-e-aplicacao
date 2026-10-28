@@ -38,6 +38,10 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
   const [copied, setCopied] = useState(false);
   const [zoomDiagram, setZoomDiagram] = useState(false);
 
+  React.useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab, component?.id]);
+
   if (!component) return null;
 
   const handleCopyTag = () => {
