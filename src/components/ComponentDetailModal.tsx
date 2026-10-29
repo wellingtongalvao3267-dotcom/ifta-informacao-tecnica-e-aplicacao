@@ -13,7 +13,8 @@ import {
   Maximize2,
   ZoomIn,
   Copy,
-  Check
+  Check,
+  AlertTriangle
 } from 'lucide-react';
 import { ComponentItem, UserRole } from '../types';
 import { TechnicalItemImage } from './TechnicalItemImage';
@@ -38,6 +39,7 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'specs' | 'diagram' | 'maintenance' | 'failures' | 'manual' | 'qr'>(initialTab);
   const [copied, setCopied] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [zoomDiagram, setZoomDiagram] = useState(false);
 
   React.useEffect(() => {
@@ -84,31 +86,32 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
             
             {(userRole === 'CDI' || userRole === 'DESENVOLVEDOR') && onEdit && (
               <button
+                type="button"
                 onClick={() => onEdit(component)}
                 title="Editar Componente"
-                className="p-1.5 rounded-lg text-amber-400 hover:text-amber-300 hover:bg-slate-800 transition"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg transition shadow-md shadow-amber-500/15 cursor-pointer"
               >
-                <Edit3 className="w-4 h-4" />
+                <Edit3 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Editar Peça</span>
               </button>
             )}
 
             {(userRole === 'CDI' || userRole === 'DESENVOLVEDOR') && onDelete && (
               <button
-                onClick={() => {
-                  if (confirm(`Deseja realmente excluir o componente ${component.tagCode}?`)) {
-                    onDelete(component.id);
-                  }
-                }}
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
                 title="Excluir Componente"
-                className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-slate-800 transition"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 hover:text-rose-300 border border-rose-500/30 text-xs font-semibold rounded-lg transition shadow-sm cursor-pointer"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Excluir Peça</span>
               </button>
             )}
 
             <button
+              type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition ml-2"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition ml-1 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -507,6 +510,49 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
           <span>IFTA Informações Técnicas e Aplicação</span>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal for Component */}
+      {showDeleteModal && onDelete && (
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in">
+          <div className="relative max-w-md w-full bg-slate-900 border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 shrink-0">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-sm font-bold text-white">
+                  Excluir Peça: {component.name}?
+                </h4>
+                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                  Tem certeza que deseja excluir permanentemente o item com código <strong className="text-white font-mono">{component.tagCode}</strong> ({component.category})? Esta ação removerá a peça do catálogo de manutenção e de qualquer máquina vinculada.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  onDelete(component.id);
+                  onClose();
+                }}
+                className="flex items-center gap-1.5 px-4 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg transition shadow-lg shadow-rose-600/30 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Sim, Excluir Peça</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

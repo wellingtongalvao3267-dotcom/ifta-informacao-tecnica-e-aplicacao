@@ -127,8 +127,9 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
 
             {(userRole === 'CDI' || userRole === 'DESENVOLVEDOR') && onEditMachine && (
               <button
+                type="button"
                 onClick={() => onEditMachine(machine)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg transition shadow-md shadow-amber-500/15"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg transition shadow-md shadow-amber-500/15 cursor-pointer"
                 title="Editar Máquina e Vínculo de Itens"
               >
                 <Edit3 className="w-3.5 h-3.5" />
@@ -136,9 +137,22 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
               </button>
             )}
 
+            {(userRole === 'CDI' || userRole === 'DESENVOLVEDOR') && onDeleteMachine && (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 hover:text-rose-300 border border-rose-500/30 text-xs font-semibold rounded-lg transition shadow-sm cursor-pointer"
+                title="Excluir Máquina"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Excluir Máquina</span>
+              </button>
+            )}
+
             <button
+              type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -448,6 +462,49 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
               size={200}
               showActions={true}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal for Machine */}
+      {confirmDelete && onDeleteMachine && (
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in">
+          <div className="relative max-w-md w-full bg-slate-900 border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 shrink-0">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-sm font-bold text-white">
+                  Excluir Máquina: {machine.name}?
+                </h4>
+                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                  Tem certeza que deseja excluir o cadastro desta máquina (<strong className="text-white font-mono">{machine.tagCode}</strong>)? Esta ação removerá a máquina da planta. As peças vinculadas permanecerão salvas no catálogo técnico.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onDeleteMachine(machine.id);
+                  setConfirmDelete(false);
+                  onClose();
+                }}
+                className="flex items-center gap-1.5 px-4 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg transition shadow-lg shadow-rose-600/30 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Sim, Excluir Máquina</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

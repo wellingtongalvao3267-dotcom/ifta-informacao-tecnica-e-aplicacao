@@ -290,6 +290,22 @@ export const storageService = {
     const filtered = items.filter(i => i.id !== id);
     if (filtered.length !== items.length) {
       this.saveComponents(filtered);
+      // Clean up linked components in machines if any
+      const machines = this.getMachines();
+      let machinesChanged = false;
+      const updatedMachines = machines.map(m => {
+        if (m.linkedComponents && m.linkedComponents.some(l => l.componentId === id)) {
+          machinesChanged = true;
+          return {
+            ...m,
+            linkedComponents: m.linkedComponents.filter(l => l.componentId !== id)
+          };
+        }
+        return m;
+      });
+      if (machinesChanged) {
+        this.saveMachines(updatedMachines);
+      }
       return true;
     }
     return false;

@@ -13,6 +13,7 @@ import {
   Search,
   RotateCcw,
   CheckCircle2,
+  AlertTriangle,
   X
 } from 'lucide-react';
 import { ComponentItem, UserAccount, AccessLog, CategoryAccessRule, UserRole } from '../types';
@@ -56,6 +57,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Logs state
   const [logs, setLogs] = useState<AccessLog[]>(storageService.getLogs());
   const [logSearch, setLogSearch] = useState('');
+  const [compToDelete, setCompToDelete] = useState<ComponentItem | null>(null);
 
   if (!isOpen) return null;
 
@@ -318,13 +320,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => {
-                              if (confirm(`Excluir ${comp.tagCode}?`)) {
-                                onDeleteComponent(comp.id);
-                              }
-                            }}
+                            type="button"
+                            onClick={() => setCompToDelete(comp)}
                             title="Excluir Peça"
-                            className="p-1.5 text-slate-400 hover:text-red-400 rounded hover:bg-slate-800 transition"
+                            className="p-1.5 text-slate-400 hover:text-red-400 rounded hover:bg-slate-800 transition cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -614,6 +613,49 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal for AdminPanel */}
+      {compToDelete && (
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in">
+          <div className="relative max-w-md w-full bg-slate-900 border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 shrink-0">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-sm font-bold text-white">
+                  Excluir Peça: {compToDelete.name}?
+                </h4>
+                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                  Tem certeza que deseja excluir a peça com código <strong className="text-white font-mono">{compToDelete.tagCode}</strong> ({compToDelete.category})? Esta ação removerá a peça de forma permanente do sistema.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setCompToDelete(null)}
+                className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const id = compToDelete.id;
+                  setCompToDelete(null);
+                  onDeleteComponent(id);
+                }}
+                className="flex items-center gap-1.5 px-4 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg transition shadow-lg shadow-rose-600/30 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Sim, Excluir Peça</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
