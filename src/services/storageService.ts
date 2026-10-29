@@ -28,6 +28,12 @@ export const storageService = {
             }
             changed = true;
           }
+          if (u.username === 'DESENVOLVEDOR' || (u.role as string) === 'DESENVOLVEDOR') {
+            u.username = 'CDI';
+            u.role = 'CDI';
+            u.displayName = 'CDI (Centro de Documentação Industrial)';
+            changed = true;
+          }
         });
         if (changed) {
           localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
@@ -44,6 +50,10 @@ export const storageService = {
         comps.forEach(c => {
           if (c.visibleToRoles && (c.visibleToRoles as string[]).includes('MANUTENCAO')) {
             c.visibleToRoles = c.visibleToRoles.map(r => ((r as string) === 'MANUTENCAO' ? 'MECANICA' : r));
+            changed = true;
+          }
+          if (c.visibleToRoles && (c.visibleToRoles as string[]).includes('DESENVOLVEDOR')) {
+            c.visibleToRoles = c.visibleToRoles.map(r => ((r as string) === 'DESENVOLVEDOR' ? 'CDI' : r));
             changed = true;
           }
           // Sanitizar caminhos antigos /src/assets/images/ para /assets/images/
@@ -97,6 +107,14 @@ export const storageService = {
             m.qrCodeData = `IFTA:${maqTagUpper}`;
             changed = true;
           }
+          if (m.linkedComponents) {
+            m.linkedComponents.forEach(link => {
+              if (link.allowedRoles && (link.allowedRoles as string[]).includes('DESENVOLVEDOR')) {
+                link.allowedRoles = link.allowedRoles.map(r => ((r as string) === 'DESENVOLVEDOR' ? 'CDI' : r));
+                changed = true;
+              }
+            });
+          }
         });
         if (changed) {
           localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(storedMachines));
@@ -113,6 +131,10 @@ export const storageService = {
         perms.forEach(p => {
           if (p.allowedRoles && (p.allowedRoles as string[]).includes('MANUTENCAO')) {
             p.allowedRoles = p.allowedRoles.map(r => ((r as string) === 'MANUTENCAO' ? 'MECANICA' : r));
+            changed = true;
+          }
+          if (p.allowedRoles && (p.allowedRoles as string[]).includes('DESENVOLVEDOR')) {
+            p.allowedRoles = p.allowedRoles.map(r => ((r as string) === 'DESENVOLVEDOR' ? 'CDI' : r));
             changed = true;
           }
         });
@@ -133,6 +155,12 @@ export const storageService = {
       if (current.displayName === 'Equipe de Manutenção Geral') {
         current.displayName = 'Equipe Técnica Mecânica';
       }
+      this.setCurrentUser(current);
+    }
+    if (current && (current.username === 'DESENVOLVEDOR' || (current.role as string) === 'DESENVOLVEDOR')) {
+      current.username = 'CDI';
+      current.role = 'CDI';
+      current.displayName = 'CDI (Centro de Documentação Industrial)';
       this.setCurrentUser(current);
     }
   },
@@ -269,7 +297,7 @@ export const storageService = {
 
   getVisibleComponentsForRole(role: UserRole): ComponentItem[] {
     const all = this.getComponents();
-    if (role === 'DESENVOLVEDOR') {
+    if (role === 'CDI' || role === 'DESENVOLVEDOR') {
       return all;
     }
 

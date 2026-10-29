@@ -19,8 +19,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onShow
   const handleSelectPreset = (role: UserRole) => {
     setSelectedRole(role);
     setErrorMessage('');
-    if (role === 'DESENVOLVEDOR') {
-      setUsername('DESENVOLVEDOR');
+    if (role === 'CDI' || role === 'DESENVOLVEDOR') {
+      setUsername('CDI');
       setPassword('');
     } else if (role === 'MECANICA' || (role as string) === 'MANUTENCAO') {
       setUsername('MECANICA');
@@ -129,15 +129,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onShow
 
           <button
             type="button"
-            onClick={() => handleSelectPreset('DESENVOLVEDOR')}
+            onClick={() => handleSelectPreset('CDI')}
             className={`flex flex-col items-center justify-center py-2.5 px-2 rounded-lg text-xs font-medium transition-all ${
-              selectedRole === 'DESENVOLVEDOR'
+              selectedRole === 'CDI' || selectedRole === 'DESENVOLVEDOR'
                 ? 'bg-amber-500 text-slate-950 font-semibold shadow'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
             }`}
           >
             <Terminal className="w-4 h-4 mb-1" />
-            <span>Desenvolvedor</span>
+            <span className="font-bold">CDI</span>
+            <span className="text-[9px] opacity-75 font-normal">Público / Senha</span>
           </button>
         </div>
 

@@ -47,7 +47,7 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
 
   // Components visible for this user's profile
   const visibleLinked = machine.linkedComponents.filter(link => {
-    if (userRole === 'DESENVOLVEDOR') return true;
+    if (userRole === 'CDI' || userRole === 'DESENVOLVEDOR') return true;
     return link.allowedRoles.includes(userRole);
   });
 
@@ -72,7 +72,7 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
     }
     return {
       badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-      title: 'Controle de Engenharia: Desenvolvedor',
+      title: 'Controle Técnico: CDI',
       icon: <Shield className="w-4 h-4 text-emerald-400" />,
       text: 'Visualização irrestrita de todos os componentes vinculados e controle de permissões por perfil técnico.'
     };
@@ -125,7 +125,7 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
               <span className="hidden sm:inline">QR da Máquina</span>
             </button>
 
-            {userRole === 'DESENVOLVEDOR' && onEditMachine && (
+            {(userRole === 'CDI' || userRole === 'DESENVOLVEDOR') && onEditMachine && (
               <button
                 onClick={() => onEditMachine(machine)}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg transition shadow-md shadow-amber-500/15"
@@ -310,8 +310,8 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
                         </div>
                       </div>
 
-                        {/* Allowed roles badges if developer */}
-                        {userRole === 'DESENVOLVEDOR' && (
+                        {/* Allowed roles badges if CDI / developer */}
+                        {(userRole === 'CDI' || userRole === 'DESENVOLVEDOR') && (
                           <div className="flex items-center gap-1.5 mt-2">
                             <span className="text-[10px] text-slate-500 font-mono">Acessível por:</span>
                             {link.allowedRoles.map(r => (
@@ -363,8 +363,8 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
             )}
           </div>
 
-          {/* Segregation Note for Non-Devs */}
-          {hiddenCount > 0 && userRole !== 'DESENVOLVEDOR' && (
+          {/* Segregation Note for Non-CDI */}
+          {hiddenCount > 0 && userRole !== 'CDI' && userRole !== 'DESENVOLVEDOR' && (
             <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800/80 flex items-center gap-2.5 text-xs text-slate-400">
               <Info className="w-4 h-4 text-amber-400 shrink-0" />
               <span>
@@ -373,8 +373,8 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
             </div>
           )}
 
-          {/* Delete Machine Button (Developer Only) */}
-          {userRole === 'DESENVOLVEDOR' && onDeleteMachine && (
+          {/* Delete Machine Button (CDI Only) */}
+          {(userRole === 'CDI' || userRole === 'DESENVOLVEDOR') && onDeleteMachine && (
             <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
               <div>
                 <span className="text-xs font-semibold text-rose-400 block">Zona de Exclusão</span>

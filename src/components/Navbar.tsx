@@ -1,6 +1,7 @@
 import React from 'react';
-import { Search, QrCode, LogOut, Settings, X, Shield, Wrench, Zap, UserCheck, Edit2 } from 'lucide-react';
+import { Search, QrCode, LogOut, Settings, X, Shield, Wrench, Zap, UserCheck, Edit2, HardDrive } from 'lucide-react';
 import { UserAccount } from '../types';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface NavbarProps {
   currentUser: UserAccount;
@@ -9,6 +10,7 @@ interface NavbarProps {
   onOpenQrScanner: () => void;
   onOpenAdminPanel?: () => void;
   onOpenEditProfile?: () => void;
+  onOpenOfflineManager?: () => void;
   onLogout: () => void;
   isAdminOpen?: boolean;
 }
@@ -20,11 +22,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenQrScanner,
   onOpenAdminPanel,
   onOpenEditProfile,
+  onOpenOfflineManager,
   onLogout,
   isAdminOpen
 }) => {
   const getRoleIcon = () => {
     switch (currentUser.role) {
+      case 'CDI':
       case 'DESENVOLVEDOR':
         return <Shield className="w-3.5 h-3.5 text-amber-400" />;
       case 'MECANICA':
@@ -32,6 +36,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         return <Wrench className="w-3.5 h-3.5 text-amber-400" />;
       case 'ELETRICA':
         return <Zap className="w-3.5 h-3.5 text-amber-400" />;
+      default:
+        return <Shield className="w-3.5 h-3.5 text-amber-400" />;
     }
   };
 
@@ -94,8 +100,24 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="inline font-bold">Escanear QR</span>
           </button>
 
-          {/* Admin Panel Toggle (for DESENVOLVEDOR only) */}
-          {currentUser.role === 'DESENVOLVEDOR' && onOpenAdminPanel && (
+          {/* Botão de Acesso Offline & Download de Informações */}
+          {onOpenOfflineManager && (
+            <button
+              type="button"
+              onClick={onOpenOfflineManager}
+              title="Baixar Informações & Modo Offline"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 md:py-2 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 active:scale-[0.97] rounded-lg border border-slate-700 transition whitespace-nowrap cursor-pointer"
+            >
+              <HardDrive className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden lg:inline">Offline & Backup</span>
+            </button>
+          )}
+
+          {/* Botão de Instalação PWA */}
+          <PWAInstallButton variant="navbar" />
+
+          {/* Admin Panel Toggle (for CDI / DESENVOLVEDOR) */}
+          {(currentUser.role === 'CDI' || currentUser.role === 'DESENVOLVEDOR') && onOpenAdminPanel && (
             <button
               onClick={onOpenAdminPanel}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 md:py-2 text-xs font-medium rounded-lg border transition whitespace-nowrap ${
@@ -105,15 +127,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Settings className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Painel do Desenvolvedor</span>
+              <span className="hidden md:inline">Painel CDI</span>
             </button>
           )}
 
-          {/* User Profile Badge (Clickable to Edit Profile Name ONLY for DESENVOLVEDOR) */}
-          {currentUser.role === 'DESENVOLVEDOR' && onOpenEditProfile ? (
+          {/* User Profile Badge (Clickable to Edit Profile Name for CDI / DESENVOLVEDOR) */}
+          {(currentUser.role === 'CDI' || currentUser.role === 'DESENVOLVEDOR') && onOpenEditProfile ? (
             <button
               onClick={onOpenEditProfile}
-              title="Clique para alterar dados do perfil (Exclusivo Desenvolvedor)"
+              title="Clique para alterar dados do perfil CDI"
               className="group flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 rounded-lg text-xs text-slate-300 font-mono transition"
             >
               {getRoleIcon()}

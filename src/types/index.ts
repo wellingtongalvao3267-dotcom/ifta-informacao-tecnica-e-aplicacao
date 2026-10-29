@@ -1,4 +1,4 @@
-export type UserRole = 'DESENVOLVEDOR' | 'MECANICA' | 'ELETRICA' | 'MANUTENCAO';
+export type UserRole = 'CDI' | 'MECANICA' | 'ELETRICA' | 'DESENVOLVEDOR' | 'MANUTENCAO';
 
 export interface UserAccount {
   id: string;

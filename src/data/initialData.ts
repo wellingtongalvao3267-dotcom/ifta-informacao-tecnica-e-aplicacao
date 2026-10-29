@@ -2,12 +2,12 @@ import { ComponentItem, UserAccount, CategoryAccessRule, MachineItem } from '../
 
 export const INITIAL_USERS: UserAccount[] = [
   {
-    id: 'user-dev-01',
-    username: 'DESENVOLVEDOR',
-    displayName: 'Wellington Galvão (Desenvolvedor)',
-    role: 'DESENVOLVEDOR',
+    id: 'user-cdi-01',
+    username: 'CDI',
+    displayName: 'CDI (Centro de Documentação Industrial)',
+    role: 'CDI',
     passwordHash: 'desenvolvedor@2026',
-    lastLogin: '2026-10-27 09:45:10',
+    lastLogin: '2026-10-29 08:00:00',
     allowedCategories: ['Elétrica', 'Mecânica', 'Pneumática', 'Automação', 'Hidráulica', 'Instrumentação', 'Painéis']
   },
   {
@@ -43,31 +43,31 @@ export const INITIAL_CATEGORIES = [
 export const INITIAL_CATEGORY_PERMISSIONS: CategoryAccessRule[] = [
   {
     category: 'Elétrica',
-    allowedRoles: ['DESENVOLVEDOR', 'ELETRICA']
+    allowedRoles: ['CDI', 'ELETRICA']
   },
   {
     category: 'Mecânica',
-    allowedRoles: ['DESENVOLVEDOR', 'MECANICA']
+    allowedRoles: ['CDI', 'MECANICA']
   },
   {
     category: 'Pneumática',
-    allowedRoles: ['DESENVOLVEDOR', 'MECANICA']
+    allowedRoles: ['CDI', 'MECANICA']
   },
   {
     category: 'Automação',
-    allowedRoles: ['DESENVOLVEDOR', 'ELETRICA']
+    allowedRoles: ['CDI', 'ELETRICA']
   },
   {
     category: 'Hidráulica',
-    allowedRoles: ['DESENVOLVEDOR', 'MECANICA']
+    allowedRoles: ['CDI', 'MECANICA']
   },
   {
     category: 'Instrumentação',
-    allowedRoles: ['DESENVOLVEDOR', 'ELETRICA']
+    allowedRoles: ['CDI', 'ELETRICA']
   },
   {
     category: 'Painéis',
-    allowedRoles: ['DESENVOLVEDOR', 'ELETRICA']
+    allowedRoles: ['CDI', 'ELETRICA']
   }
 ];
 
@@ -137,7 +137,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     manualFileName: 'Manual_Siemens_Simotics_1LE1_Instalacao.pdf',
     manualSummary: 'Contém procedimentos de içamento, alinhamento a laser com acoplamento elástico, esquema da caixa de ligação e cronograma de lubrificação.',
     qrCodeData: 'IFTA:MOT-IND-042',
-    visibleToRoles: ['DESENVOLVEDOR', 'ELETRICA'],
+    visibleToRoles: ['CDI', 'ELETRICA'],
     createdAt: '2026-03-10T08:00:00Z',
     updatedAt: '2026-10-27T09:12:00Z'
   },
@@ -199,7 +199,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     manualFileName: 'Manual_Operacao_Sinamics_G120C_Portugues.pdf',
     manualSummary: 'Guia completo de parametrização básica, lista de alarmes e falhas, diagrama de controle e configuração de rede industrial.',
     qrCodeData: 'IFTA:INV-ELET-018',
-    visibleToRoles: ['DESENVOLVEDOR', 'ELETRICA'],
+    visibleToRoles: ['CDI', 'ELETRICA'],
     createdAt: '2026-03-12T10:00:00Z',
     updatedAt: '2026-10-27T08:45:00Z'
   },
@@ -261,7 +261,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     manualFileName: 'Catalogo_Tecnico_Festo_VTUG_Manifold.pdf',
     manualSummary: 'Tabela de pinagem do conector Sub-D 25 polos, vistas explodidas para reposição de reparos e gráficos de vazão vs pressão diferencial.',
     qrCodeData: 'IFTA:VAL-PNEUM-105',
-    visibleToRoles: ['DESENVOLVEDOR', 'MECANICA'],
+    visibleToRoles: ['CDI', 'MECANICA'],
     createdAt: '2026-03-15T11:20:00Z',
     updatedAt: '2026-10-27T08:50:00Z'
   },
@@ -323,7 +323,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     manualFileName: 'Ficha_Tecnica_Telemecanique_XS612B1PAL2.pdf',
     manualSummary: 'Curvas de atenuação para metais não-ferrosos (alumínio, latão, inox), dimensões de furação e raio de curvatura do cabo.',
     qrCodeData: 'IFTA:SEN-IND-077',
-    visibleToRoles: ['DESENVOLVEDOR', 'ELETRICA'],
+    visibleToRoles: ['CDI', 'ELETRICA'],
     createdAt: '2026-03-18T14:00:00Z',
     updatedAt: '2026-10-27T07:30:00Z'
   },
@@ -385,7 +385,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     manualFileName: 'Manual_SKF_Montagem_Rolamentos_Autocompensadores.pdf',
     manualSummary: 'Método do ângulo de aperto da porca, tabela de deslocamento axial e recomendações de lubrificação para vibração severa.',
     qrCodeData: 'IFTA:ROL-MEC-219',
-    visibleToRoles: ['DESENVOLVEDOR', 'MECANICA'],
+    visibleToRoles: ['CDI', 'MECANICA'],
     createdAt: '2026-03-20T09:00:00Z',
     updatedAt: '2026-10-27T08:10:00Z'
   },
@@ -447,7 +447,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     manualFileName: 'Manual_Manutencao_Bomba_Palhetas_PV7.pdf',
     manualSummary: 'Procedimento de sangria de ar na primeira partida, tabela de torques de montagem do kit de cartucho e curva de potência consumida.',
     qrCodeData: 'IFTA:BOM-HID-031',
-    visibleToRoles: ['DESENVOLVEDOR', 'MECANICA'],
+    visibleToRoles: ['CDI', 'MECANICA'],
     createdAt: '2026-03-22T10:15:00Z',
     updatedAt: '2026-10-27T08:00:00Z'
   },
@@ -508,7 +508,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     manualFileName: 'Catalogo_Schneider_TeSys_GV2_Instrucoes.pdf',
     manualSummary: 'Gráficos de curvas tempo-corrente de disparo térmico e magnético, tabela de coordenação tipo 2 com contatores LC1D.',
     qrCodeData: 'IFTA:DISJ-EL-012',
-    visibleToRoles: ['DESENVOLVEDOR', 'ELETRICA'],
+    visibleToRoles: ['CDI', 'ELETRICA'],
     createdAt: '2026-03-25T11:00:00Z',
     updatedAt: '2026-10-27T07:15:00Z'
   },
@@ -570,7 +570,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     manualFileName: 'Manual_SKF_Caixas_Mancal_SNL_500.pdf',
     manualSummary: 'Dimensões nominais de montagem, códigos de peças sobressalentes, anéis de vedação e tipos de lubrificantes aprovados.',
     qrCodeData: 'IFTA:MANC-MEC-104',
-    visibleToRoles: ['DESENVOLVEDOR', 'MECANICA'],
+    visibleToRoles: ['CDI', 'MECANICA'],
     createdAt: '2026-03-26T09:00:00Z',
     updatedAt: '2026-10-27T08:00:00Z'
   },
@@ -632,7 +632,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     manualFileName: 'Manual_Instalacao_Esteiras_Modulares_Habasit.pdf',
     manualSummary: 'Instruções para emenda de fita, cálculo de potência de tração e tabela de espaçamento de engrenagens sprockets.',
     qrCodeData: 'IFTA:FITA-MEC-055',
-    visibleToRoles: ['DESENVOLVEDOR', 'MECANICA'],
+    visibleToRoles: ['CDI', 'MECANICA'],
     createdAt: '2026-03-26T10:00:00Z',
     updatedAt: '2026-10-27T08:05:00Z'
   },
@@ -694,7 +694,7 @@ export const INITIAL_COMPONENTS: ComponentItem[] = [
     manualFileName: 'Catalogo_Rolos_Transportadores_Industriais.pdf',
     manualSummary: 'Tabela de seleção de rolos de carga, rolos guias e rolos de retorno com guias de diâmetro e peso admissível.',
     qrCodeData: 'IFTA:ROLO-MEC-088',
-    visibleToRoles: ['DESENVOLVEDOR', 'MECANICA'],
+    visibleToRoles: ['CDI', 'MECANICA'],
     createdAt: '2026-03-26T11:00:00Z',
     updatedAt: '2026-10-27T08:10:00Z'
   }
@@ -714,37 +714,37 @@ export const INITIAL_MACHINES: MachineItem[] = [
     linkedComponents: [
       {
         componentId: 'comp-001',
-        allowedRoles: ['DESENVOLVEDOR', 'ELETRICA'],
+        allowedRoles: ['CDI', 'ELETRICA'],
         positionOrFunction: 'Motoredutor Elétrico de Tração Principal (7.5 kW / 10 CV)'
       },
       {
         componentId: 'comp-002',
-        allowedRoles: ['DESENVOLVEDOR', 'ELETRICA'],
+        allowedRoles: ['CDI', 'ELETRICA'],
         positionOrFunction: 'Inversor de Frequência Sinamics G120C (Painel CCM-01 / Controle de Velocidade)'
       },
       {
         componentId: 'comp-004',
-        allowedRoles: ['DESENVOLVEDOR', 'ELETRICA'],
+        allowedRoles: ['CDI', 'ELETRICA'],
         positionOrFunction: 'Sensor de Proximidade Indutivo (Contagem de Peças e Fim de Curso)'
       },
       {
         componentId: 'comp-005',
-        allowedRoles: ['DESENVOLVEDOR', 'MECANICA'],
+        allowedRoles: ['CDI', 'MECANICA'],
         positionOrFunction: 'Rolamentos Autocompensadores SKF 22212 (Tambor de Tração e Retorno)'
       },
       {
         componentId: 'comp-008',
-        allowedRoles: ['DESENVOLVEDOR', 'MECANICA'],
+        allowedRoles: ['CDI', 'MECANICA'],
         positionOrFunction: 'Mancais Bipartidos com Graxeira SNL 512 (Apoio dos Eixos dos Tambores)'
       },
       {
         componentId: 'comp-009',
-        allowedRoles: ['DESENVOLVEDOR', 'MECANICA'],
+        allowedRoles: ['CDI', 'MECANICA'],
         positionOrFunction: 'Modelo de Fita de Transporte Modular Flat Top 2" (Largura 650 mm)'
       },
       {
         componentId: 'comp-010',
-        allowedRoles: ['DESENVOLVEDOR', 'MECANICA'],
+        allowedRoles: ['CDI', 'MECANICA'],
         positionOrFunction: 'Conjunto de Rolos de Carga e Retorno Emborrachados Ø89 mm'
       }
     ],
@@ -764,17 +764,17 @@ export const INITIAL_MACHINES: MachineItem[] = [
     linkedComponents: [
       {
         componentId: 'comp-003',
-        allowedRoles: ['DESENVOLVEDOR', 'MECANICA'],
+        allowedRoles: ['CDI', 'MECANICA'],
         positionOrFunction: 'Bloco Manifold de Válvulas Solenoide Festo VTUG (Atuadores Pneumáticos)'
       },
       {
         componentId: 'comp-004',
-        allowedRoles: ['DESENVOLVEDOR', 'ELETRICA'],
+        allowedRoles: ['CDI', 'ELETRICA'],
         positionOrFunction: 'Sensor Indutivo Telemecanique XS612 (Sincronismo de Alimentação)'
       },
       {
         componentId: 'comp-007',
-        allowedRoles: ['DESENVOLVEDOR', 'ELETRICA'],
+        allowedRoles: ['CDI', 'ELETRICA'],
         positionOrFunction: 'Disjuntor-Motor TeSys GV2ME20 (Proteção da Bomba de Vácuo do Alimentador)'
       }
     ],
@@ -823,8 +823,8 @@ export const INITIAL_LOGS = [
   {
     id: 'log-005',
     timestamp: '2026-10-27 09:45:10',
-    username: 'DESENVOLVEDOR',
-    role: 'DESENVOLVEDOR' as const,
+    username: 'CDI',
+    role: 'CDI' as const,
     action: 'Autenticação Administrativa',
     details: 'Login de Desenvolvedor autenticado com credenciais mestras.',
     clientDevice: 'Console de Engenharia IFTA (Workstation Linux)'

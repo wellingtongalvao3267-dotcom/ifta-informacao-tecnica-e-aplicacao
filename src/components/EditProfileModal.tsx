@@ -24,10 +24,11 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  if (!isOpen || currentUser.role !== 'DESENVOLVEDOR') return null;
+  if (!isOpen || (currentUser.role !== 'CDI' && currentUser.role !== 'DESENVOLVEDOR')) return null;
 
   const getRoleIcon = () => {
     switch (currentUser.role) {
+      case 'CDI':
       case 'DESENVOLVEDOR':
         return <Shield className="w-5 h-5 text-amber-400" />;
       case 'MECANICA':

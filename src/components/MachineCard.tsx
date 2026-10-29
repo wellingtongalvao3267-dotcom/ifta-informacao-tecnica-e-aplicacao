@@ -20,7 +20,7 @@ export const MachineCard: React.FC<MachineCardProps> = ({
 }) => {
   // Filter linked components visible to the current role
   const visibleLinked = machine.linkedComponents.filter(link => {
-    if (userRole === 'DESENVOLVEDOR') return true;
+    if (userRole === 'CDI' || userRole === 'DESENVOLVEDOR') return true;
     return link.allowedRoles.includes(userRole);
   });
 

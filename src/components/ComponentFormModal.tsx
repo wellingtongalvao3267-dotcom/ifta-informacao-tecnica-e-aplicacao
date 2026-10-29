@@ -59,7 +59,7 @@ export const ComponentFormModal: React.FC<ComponentFormModalProps> = ({
 
   // Visible to roles
   const [visibleToRoles, setVisibleToRoles] = useState<UserRole[]>(
-    initialComponent?.visibleToRoles || ['DESENVOLVEDOR', 'MECANICA', 'ELETRICA']
+    initialComponent?.visibleToRoles || ['CDI', 'MECANICA', 'ELETRICA']
   );
 
   const [error, setError] = useState('');
@@ -136,7 +136,7 @@ export const ComponentFormModal: React.FC<ComponentFormModalProps> = ({
   };
 
   const toggleRoleVisibility = (role: UserRole) => {
-    if (role === 'DESENVOLVEDOR') return; // Always visible to developer
+    if (role === 'CDI' || role === 'DESENVOLVEDOR') return; // Always visible to CDI
     if (visibleToRoles.includes(role)) {
       setVisibleToRoles(visibleToRoles.filter(r => r !== role));
     } else {
@@ -186,7 +186,7 @@ export const ComponentFormModal: React.FC<ComponentFormModalProps> = ({
       manualFileName: manualFileName.trim() || `${cleanTag}_manual.pdf`,
       manualSummary: manualSummary.trim(),
       qrCodeData: `IFTA:${cleanTag}`,
-      visibleToRoles,
+      visibleToRoles: Array.from(new Set([...visibleToRoles, 'CDI'])) as UserRole[],
       createdAt: initialComponent?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -205,7 +205,7 @@ export const ComponentFormModal: React.FC<ComponentFormModalProps> = ({
               {isEditing ? `Editar Componente: ${initialComponent?.tagCode}` : 'Cadastrar Novo Componente / Peça'}
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              Área restrita ao Desenvolvedor para gerenciamento do banco de dados técnico
+              Área de Gestão Técnica CDI (Público com Senha) para gerenciamento do banco de dados técnico
             </p>
           </div>
           <button
@@ -599,7 +599,7 @@ export const ComponentFormModal: React.FC<ComponentFormModalProps> = ({
                   disabled
                   className="rounded text-amber-500"
                 />
-                <span className="text-xs font-semibold text-slate-200">DESENVOLVEDOR</span>
+                <span className="text-xs font-semibold text-slate-200">CDI</span>
                 <span className="text-[10px] text-slate-500">(Total)</span>
               </div>
 

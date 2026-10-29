@@ -27,6 +27,8 @@ import { EditProfileModal } from './components/EditProfileModal';
 import { MachineCard } from './components/MachineCard';
 import { MachineDetailModal } from './components/MachineDetailModal';
 import { MachineFormModal } from './components/MachineFormModal';
+import { OfflineManagerModal } from './components/OfflineManagerModal';
+import { OfflineIndicator } from './components/OfflineIndicator';
 
 export default function App() {
   // Splash and Auth State
@@ -49,6 +51,7 @@ export default function App() {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isMachineFormOpen, setIsMachineFormOpen] = useState(false);
+  const [isOfflineModalOpen, setIsOfflineModalOpen] = useState(false);
   const [editingComponent, setEditingComponent] = useState<ComponentItem | null>(null);
   const [editingMachine, setEditingMachine] = useState<MachineItem | null>(null);
   const [detailInitialTab, setDetailInitialTab] = useState<'specs' | 'diagram' | 'maintenance' | 'failures' | 'manual' | 'qr'>('specs');
@@ -285,6 +288,8 @@ export default function App() {
     return new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime();
   });
 
+  const isCdi = currentUser.role === 'CDI' || currentUser.role === 'DESENVOLVEDOR';
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-amber-500/20 selection:text-amber-300">
       
@@ -294,11 +299,15 @@ export default function App() {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         onOpenQrScanner={handleOpenQrScanner}
-        onOpenAdminPanel={currentUser.role === 'DESENVOLVEDOR' ? () => setIsAdminPanelOpen(true) : undefined}
-        onOpenEditProfile={currentUser.role === 'DESENVOLVEDOR' ? () => setIsEditProfileOpen(true) : undefined}
+        onOpenAdminPanel={isCdi ? () => setIsAdminPanelOpen(true) : undefined}
+        onOpenEditProfile={isCdi ? () => setIsEditProfileOpen(true) : undefined}
+        onOpenOfflineManager={() => setIsOfflineModalOpen(true)}
         onLogout={handleLogout}
         isAdminOpen={isAdminPanelOpen}
       />
+
+      {/* Offline Status Badge / Alert Bar */}
+      <OfflineIndicator onOpenManager={() => setIsOfflineModalOpen(true)} />
 
       {/* Main Workspace */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-6 space-y-6">
@@ -307,7 +316,7 @@ export default function App() {
         <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400">
-              {currentUser.role === 'DESENVOLVEDOR' && <Shield className="w-5 h-5" />}
+              {isCdi && <Shield className="w-5 h-5" />}
               {(currentUser.role === 'MECANICA' || currentUser.role === 'MANUTENCAO') && <Wrench className="w-5 h-5" />}
               {currentUser.role === 'ELETRICA' && <Zap className="w-5 h-5" />}
             </div>
@@ -319,7 +328,7 @@ export default function App() {
                 <span className="text-xs font-mono text-amber-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
                   {currentUser.role}
                 </span>
-                {currentUser.role === 'DESENVOLVEDOR' && (
+                {isCdi && (
                   <button
                     onClick={() => setIsEditProfileOpen(true)}
                     className="text-xs text-amber-400 hover:text-amber-300 underline underline-offset-2 ml-1 cursor-pointer font-medium"
@@ -329,8 +338,8 @@ export default function App() {
                 )}
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                {currentUser.role === 'DESENVOLVEDOR'
-                  ? 'Acesso de Engenharia: Cadastre e vincule máquinas, defina permissões de peças para Mecânica e Elétrica.'
+                {isCdi
+                  ? 'Acesso CDI (Público com Senha): Cadastre e vincule máquinas, defina permissões de peças e gerencie o banco de dados técnico. Seus itens permanecem salvos permanentemente.'
                   : currentUser.role === 'MECANICA'
                   ? 'Acesso Mecânico: Ao pesquisar máquinas na lupa ou navegar abaixo, você tem acesso às peças mecânicas pré-definidas (rolamentos, mancais, correia, rolos).'
                   : 'Acesso Elétrico: Ao pesquisar máquinas na lupa ou navegar abaixo, você tem acesso às peças elétricas e automação pré-definidas (motores, inversores, sensores).'}
@@ -339,7 +348,7 @@ export default function App() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
-            {currentUser.role === 'DESENVOLVEDOR' && (
+            {isCdi && (
               <>
                 {/* Opção solicitada pelo usuário: CADASTRA MAQUINA */}
                 <button
@@ -671,7 +680,7 @@ export default function App() {
             manualFileName: 'manual_tecnico.pdf',
             manualSummary: 'Manual de operação e manutenção técnica.',
             maintenanceIntervalHours: 4000,
-            visibleToRoles: ['DESENVOLVEDOR', 'MECANICA', 'ELETRICA'],
+            visibleToRoles: ['CDI', 'MECANICA', 'ELETRICA'],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           });
@@ -679,8 +688,8 @@ export default function App() {
         }}
       />
 
-      {/* Developer Admin Panel */}
-      {currentUser.role === 'DESENVOLVEDOR' && (
+      {/* CDI Admin Panel */}
+      {isCdi && (
         <AdminPanel
           isOpen={isAdminPanelOpen}
           onClose={() => setIsAdminPanelOpen(false)}
@@ -700,7 +709,7 @@ export default function App() {
         />
       )}
 
-      {/* Developer Component Form Modal (Create / Edit) */}
+      {/* CDI Component Form Modal (Create / Edit) */}
       {isFormModalOpen && (
         <ComponentFormModal
           isOpen={isFormModalOpen}
@@ -713,8 +722,8 @@ export default function App() {
         />
       )}
 
-      {/* Edit Profile Modal (Accessible only by DESENVOLVEDOR) */}
-      {isEditProfileOpen && currentUser && currentUser.role === 'DESENVOLVEDOR' && (
+      {/* Edit Profile Modal (Accessible by CDI) */}
+      {isEditProfileOpen && currentUser && isCdi && (
         <EditProfileModal
           isOpen={isEditProfileOpen}
           onClose={() => setIsEditProfileOpen(false)}
@@ -725,6 +734,15 @@ export default function App() {
           }}
         />
       )}
+
+      {/* Offline Management Modal (Download database & PWA offline cache) */}
+      <OfflineManagerModal
+        isOpen={isOfflineModalOpen}
+        onClose={() => setIsOfflineModalOpen(false)}
+        onDataRestored={() => {
+          refreshComponents();
+        }}
+      />
     </div>
   );
 }

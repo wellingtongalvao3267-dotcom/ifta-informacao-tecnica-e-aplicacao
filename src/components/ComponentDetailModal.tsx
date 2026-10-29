@@ -82,7 +82,7 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
               <Printer className="w-4 h-4" />
             </button>
             
-            {userRole === 'DESENVOLVEDOR' && onEdit && (
+            {(userRole === 'CDI' || userRole === 'DESENVOLVEDOR') && onEdit && (
               <button
                 onClick={() => onEdit(component)}
                 title="Editar Componente"
@@ -92,7 +92,7 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
               </button>
             )}
 
-            {userRole === 'DESENVOLVEDOR' && onDelete && (
+            {(userRole === 'CDI' || userRole === 'DESENVOLVEDOR') && onDelete && (
               <button
                 onClick={() => {
                   if (confirm(`Deseja realmente excluir o componente ${component.tagCode}?`)) {

@@ -173,10 +173,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
             <div>
               <h2 className="text-base font-bold text-white">
-                Painel Administrativo do Desenvolvedor
+                Painel de Gestão e Documentação do CDI
               </h2>
               <p className="text-xs text-slate-400">
-                Gestão completa de banco de dados, contas de usuários, matriz de acesso e auditoria
+                Gestão pública com senha para cadastro, edição de peças e máquinas, contas e auditoria
               </p>
             </div>
           </div>
@@ -462,7 +462,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     Matriz de Liberação de Bancos de Dados por Categoria
                   </h4>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Selecione quais categorias de peças os perfis <strong>MECANICA</strong> e <strong>ELETRICA</strong> podem consultar. O Desenvolvedor possui acesso irrestrito a todas.
+                    Selecione quais categorias de peças os perfis <strong>MECANICA</strong> e <strong>ELETRICA</strong> podem consultar. O perfil <strong>CDI</strong> possui acesso irrestrito para cadastrar e editar tudo.
                   </p>
                 </div>
                 {permSaved && (
@@ -479,7 +479,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <th className="px-4 py-3 font-semibold">Categoria / Banco</th>
                       <th className="px-4 py-3 font-semibold text-center">MECANICA (bello2026)</th>
                       <th className="px-4 py-3 font-semibold text-center">ELETRICA (bello0099)</th>
-                      <th className="px-4 py-3 font-semibold text-center">DESENVOLVEDOR</th>
+                      <th className="px-4 py-3 font-semibold text-center">CDI (Público c/ Senha)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/80">

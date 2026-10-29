@@ -119,7 +119,7 @@ export const MachineFormModal: React.FC<MachineFormModalProps> = ({
       const isMec = ['mecânica', 'pneumática', 'hidráulica'].includes(comp.category.toLowerCase());
       const isElet = ['elétrica', 'automação', 'instrumentação', 'painéis'].includes(comp.category.toLowerCase());
 
-      const allowedRoles: UserRole[] = ['DESENVOLVEDOR'];
+      const allowedRoles: UserRole[] = ['CDI'];
       if (isMec) allowedRoles.push('MECANICA');
       if (isElet) allowedRoles.push('ELETRICA');
       if (!isMec && !isElet) {
@@ -145,8 +145,8 @@ export const MachineFormModal: React.FC<MachineFormModalProps> = ({
     const updated = current.map(link => {
       if (link.componentId !== componentId) return link;
       const roles = new Set(link.allowedRoles);
-      // DESENVOLVEDOR always has access
-      roles.add('DESENVOLVEDOR');
+      // CDI always has access
+      roles.add('CDI');
 
       if (roles.has(role)) {
         roles.delete(role);
@@ -183,7 +183,7 @@ export const MachineFormModal: React.FC<MachineFormModalProps> = ({
       const isMec = ['mecânica', 'pneumática', 'hidráulica'].includes(comp.category.toLowerCase());
       const isElet = ['elétrica', 'automação', 'instrumentação', 'painéis'].includes(comp.category.toLowerCase());
 
-      const allowed: UserRole[] = ['DESENVOLVEDOR'];
+      const allowed: UserRole[] = ['CDI'];
       if (isMec) allowed.push('MECANICA');
       if (isElet) allowed.push('ELETRICA');
       if (!isMec && !isElet) {
@@ -269,7 +269,7 @@ export const MachineFormModal: React.FC<MachineFormModalProps> = ({
                   {initialMachine ? 'Editar Cadastro de Máquina' : 'Cadastrar Nova Máquina'}
                 </h2>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold uppercase">
-                  Desenvolvedor
+                  CDI
                 </span>
               </div>
               <p className="text-xs text-slate-400">
@@ -604,7 +604,7 @@ export const MachineFormModal: React.FC<MachineFormModalProps> = ({
                 </span>
               </div>
               <span className="text-[11px] text-slate-400 font-mono">
-                Desenvolvedor sempre tem acesso total
+                CDI sempre tem acesso total a todas as peças
               </span>
             </div>
 
