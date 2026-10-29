@@ -89,9 +89,10 @@ export const MachineFormModal: React.FC<MachineFormModalProps> = ({
         linkedComponents: initialMachine.linkedComponents ? [...initialMachine.linkedComponents] : []
       });
     } else {
+      const defaultTag = storageService.generateUniqueMachineTag('MAQ-EST');
       setFormData({
         name: '',
-        tagCode: `MAQ-EST-${String(Math.floor(Math.random() * 90) + 10)}`,
+        tagCode: defaultTag,
         sector: 'Linha de Embalagem / Expedição',
         dimensions: '12.500 mm (Comprimento) x 650 mm (Largura útil) x 900 mm (Altura)',
         description: 'Máquina / Equipamento industrial para linha de produção contínua.',

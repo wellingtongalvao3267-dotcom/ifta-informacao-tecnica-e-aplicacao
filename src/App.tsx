@@ -435,9 +435,25 @@ export default function App() {
                 </div>
               </div>
 
-              <span className="text-xs text-slate-400 font-mono">
-                {filteredMachines.length} máquina(s)
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400 font-mono hidden sm:inline">
+                  {filteredMachines.length} máquina(s)
+                </span>
+                {isCdi && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingMachine(null);
+                      setIsMachineFormOpen(true);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg transition shadow-md shadow-amber-500/20 cursor-pointer"
+                    title="Cadastrar nova máquina e vincular peças"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Cadastrar Máquina</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {filteredMachines.length > 0 ? (
@@ -456,8 +472,21 @@ export default function App() {
                 ))}
               </div>
             ) : (
-              <div className="p-6 text-center rounded-xl bg-slate-900/40 border border-slate-800 text-xs text-slate-400">
-                Nenhuma máquina corresponde aos critérios de pesquisa.
+              <div className="p-8 text-center rounded-xl bg-slate-900/40 border border-slate-800 text-xs text-slate-400 space-y-3">
+                <p>Nenhuma máquina corresponde aos critérios de pesquisa.</p>
+                {isCdi && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingMachine(null);
+                      setIsMachineFormOpen(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg transition text-xs shadow-md shadow-amber-500/20 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Cadastrar Máquina</span>
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -607,17 +636,17 @@ export default function App() {
           onSelectComponent={(comp, initialTab) => {
             handleSelectComponent(comp, initialTab || 'specs');
           }}
-          onEditMachine={currentUser.role === 'DESENVOLVEDOR' ? (maq) => {
+          onEditMachine={isCdi ? (maq) => {
             setSelectedMachine(null);
             setEditingMachine(maq);
             setIsMachineFormOpen(true);
           } : undefined}
-          onDeleteMachine={currentUser.role === 'DESENVOLVEDOR' ? handleDeleteMachine : undefined}
+          onDeleteMachine={isCdi ? handleDeleteMachine : undefined}
         />
       )}
 
-      {/* Developer Machine Form Modal (Create / Edit) */}
-      {isMachineFormOpen && currentUser.role === 'DESENVOLVEDOR' && (
+      {/* CDI Machine Form Modal (Create / Edit) */}
+      {isMachineFormOpen && isCdi && (
         <MachineFormModal
           isOpen={isMachineFormOpen}
           onClose={() => {

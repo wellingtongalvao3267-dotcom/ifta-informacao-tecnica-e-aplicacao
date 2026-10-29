@@ -138,7 +138,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onShow
           >
             <Terminal className="w-4 h-4 mb-1" />
             <span className="font-bold">CDI</span>
-            <span className="text-[9px] opacity-75 font-normal">Público / Senha</span>
           </button>
         </div>
 
