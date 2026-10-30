@@ -45,13 +45,19 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
 
   if (!machine) return null;
 
-  // Components visible for this user's profile
-  const visibleLinked = machine.linkedComponents.filter(link => {
+  // Components visible for this user's profile (safe calculation)
+  const links = machine.linkedComponents || [];
+  const visibleLinked = links.filter(link => {
     if (userRole === 'CDI' || userRole === 'DESENVOLVEDOR') return true;
-    return link.allowedRoles.includes(userRole);
+    if (!link.allowedRoles || link.allowedRoles.length === 0) return true;
+    return (
+      link.allowedRoles.includes(userRole) ||
+      (userRole === 'MECANICA' && (link.allowedRoles.includes('MANUTENCAO') || link.allowedRoles.includes('MECANICA'))) ||
+      (userRole === 'ELETRICA' && link.allowedRoles.includes('ELETRICA'))
+    );
   });
 
-  const hiddenCount = machine.linkedComponents.length - visibleLinked.length;
+  const hiddenCount = links.length - visibleLinked.length;
 
   const getRoleTheme = () => {
     if (userRole === 'MECANICA') {
@@ -266,7 +272,11 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
             {visibleLinked.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {visibleLinked.map((link) => {
-                  const comp = allComponents.find(c => c.id === link.componentId);
+                  const comp = allComponents.find(c => 
+                    c.id === link.componentId || 
+                    c.tagCode.toUpperCase() === link.componentId.toUpperCase() ||
+                    c.id.toLowerCase() === link.componentId.toLowerCase()
+                  );
                   if (!comp) return null;
 
                   return (

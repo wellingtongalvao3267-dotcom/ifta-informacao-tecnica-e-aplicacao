@@ -255,16 +255,50 @@ export default function App() {
   const availableCategories = Array.from(new Set(components.map(c => c.category))).filter(Boolean);
 
   // Filtering & Sorting
+  const allAvailableComps = storageService.getComponents();
   const filteredMachines = machines.filter(m => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return true;
-    return (
+
+    // Direct match on machine properties
+    const directMatch = (
       m.name.toLowerCase().includes(query) ||
       m.tagCode.toLowerCase().includes(query) ||
       m.sector.toLowerCase().includes(query) ||
       m.description.toLowerCase().includes(query) ||
       (m.dimensions && m.dimensions.toLowerCase().includes(query))
     );
+    if (directMatch) return true;
+
+    // Check linked components visible to this role
+    const links = m.linkedComponents || [];
+    return links.some(link => {
+      const isAllowed = 
+        currentUser.role === 'CDI' || 
+        currentUser.role === 'DESENVOLVEDOR' ||
+        !link.allowedRoles ||
+        link.allowedRoles.includes(currentUser.role) ||
+        (currentUser.role === 'MECANICA' && (link.allowedRoles.includes('MANUTENCAO') || link.allowedRoles.includes('MECANICA'))) ||
+        (currentUser.role === 'ELETRICA' && link.allowedRoles.includes('ELETRICA'));
+      
+      if (!isAllowed) return false;
+
+      const comp = allAvailableComps.find(c => 
+        c.id === link.componentId || 
+        c.tagCode.toUpperCase() === link.componentId.toUpperCase() ||
+        c.id.toLowerCase() === link.componentId.toLowerCase()
+      );
+
+      if (!comp) return false;
+
+      return (
+        comp.name.toLowerCase().includes(query) ||
+        comp.tagCode.toLowerCase().includes(query) ||
+        comp.category.toLowerCase().includes(query) ||
+        comp.manufacturer.toLowerCase().includes(query) ||
+        (link.positionOrFunction && link.positionOrFunction.toLowerCase().includes(query))
+      );
+    });
   });
 
   const filteredComponents = components.filter(comp => {
@@ -613,18 +647,6 @@ export default function App() {
           <span>Engenharia & Manutenção 2026</span>
         </div>
       </footer>
-
-      {/* Floating Action Button (FAB) para Escanear QR Code em Dispositivos Móveis */}
-      <div className="fixed bottom-5 right-5 z-40 sm:hidden">
-        <button
-          type="button"
-          onClick={handleOpenQrScanner}
-          className="flex items-center gap-2 px-4 py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-full shadow-2xl shadow-amber-500/30 active:scale-95 transition-all border-2 border-slate-950 cursor-pointer"
-        >
-          <QrCode className="w-4 h-4" />
-          <span>Escanear QR</span>
-        </button>
-      </div>
 
       {/* Machine Detail Modal */}
       {selectedMachine && (

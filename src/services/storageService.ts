@@ -100,18 +100,35 @@ export const storageService = {
             changed = true;
           }
         });
-        // Garantir payload de QR Code válido e persistente para cada máquina
+        // Garantir payload de QR Code válido e persistente para cada máquina e migrar permissões
         storedMachines.forEach(m => {
           const maqTagUpper = (m.tagCode || '').trim().toUpperCase();
           if (!m.qrCodeData || !m.qrCodeData.startsWith('IFTA:')) {
             m.qrCodeData = `IFTA:${maqTagUpper}`;
             changed = true;
           }
-          if (m.linkedComponents) {
+          if (!m.linkedComponents) {
+            m.linkedComponents = [];
+            changed = true;
+          } else {
             m.linkedComponents.forEach(link => {
-              if (link.allowedRoles && (link.allowedRoles as string[]).includes('DESENVOLVEDOR')) {
-                link.allowedRoles = link.allowedRoles.map(r => ((r as string) === 'DESENVOLVEDOR' ? 'CDI' : r));
+              if (!link.allowedRoles || link.allowedRoles.length === 0) {
+                link.allowedRoles = ['CDI', 'MECANICA', 'ELETRICA'];
                 changed = true;
+              } else {
+                if ((link.allowedRoles as string[]).includes('DESENVOLVEDOR')) {
+                  link.allowedRoles = link.allowedRoles.map(r => ((r as string) === 'DESENVOLVEDOR' ? 'CDI' : r));
+                  changed = true;
+                }
+                if ((link.allowedRoles as string[]).includes('MANUTENCAO')) {
+                  link.allowedRoles = link.allowedRoles.map(r => ((r as string) === 'MANUTENCAO' ? 'MECANICA' : r));
+                  changed = true;
+                }
+                // Garantir que CDI esteja sempre presente
+                if (!link.allowedRoles.includes('CDI')) {
+                  link.allowedRoles.push('CDI');
+                  changed = true;
+                }
               }
             });
           }
@@ -226,7 +243,13 @@ export const storageService = {
   getComponents(): ComponentItem[] {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.COMPONENTS);
-      return data ? JSON.parse(data) : INITIAL_COMPONENTS;
+      const items: ComponentItem[] = data ? JSON.parse(data) : INITIAL_COMPONENTS;
+      return items.map(c => ({
+        ...c,
+        visibleToRoles: Array.isArray(c.visibleToRoles) && c.visibleToRoles.length > 0 
+          ? c.visibleToRoles 
+          : ['CDI', 'MECANICA', 'ELETRICA']
+      }));
     } catch {
       return INITIAL_COMPONENTS;
     }
@@ -317,23 +340,64 @@ export const storageService = {
       return all;
     }
 
+    const normalize = (str: string) => 
+      str ? str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim() : '';
+
     const rules = this.getCategoryPermissions();
     const allowedCategories = new Set(
-      rules.filter(r => r.allowedRoles.includes(role)).map(r => r.category.toLowerCase().trim())
+      rules
+        .filter(r => r.allowedRoles && (
+          r.allowedRoles.includes(role) ||
+          (role === 'MECANICA' && r.allowedRoles.includes('MANUTENCAO'))
+        ))
+        .map(r => normalize(r.category))
     );
 
+    // Also collect component IDs that are linked to machines and allowed for this role
+    const machines = this.getMachines();
+    const linkedComponentIdsForRole = new Set<string>();
+    machines.forEach(m => {
+      (m.linkedComponents || []).forEach(link => {
+        const isAllowed = 
+          link.allowedRoles?.includes(role) ||
+          (role === 'MECANICA' && link.allowedRoles?.includes('MANUTENCAO')) ||
+          (!link.allowedRoles || link.allowedRoles.length === 0);
+        if (isAllowed) {
+          linkedComponentIdsForRole.add(link.componentId.toLowerCase());
+        }
+      });
+    });
+
     return all.filter(item => {
-      // Direct role assignment or category rule
-      const directAllowed = item.visibleToRoles && item.visibleToRoles.includes(role);
-      const catAllowed = allowedCategories.has(item.category.toLowerCase().trim());
-      return directAllowed || catAllowed;
+      // 1. If item has no restrictions, allow it
+      if (!item.visibleToRoles || item.visibleToRoles.length === 0) return true;
+
+      // 2. Direct role assignment check
+      const directAllowed = item.visibleToRoles.some(r => 
+        r === role || 
+        (role === 'MECANICA' && r === 'MANUTENCAO')
+      );
+
+      // 3. Category rule check (accent-insensitive)
+      const catAllowed = allowedCategories.has(normalize(item.category));
+
+      // 4. Linked to a machine permitted for this role
+      const linkedAllowed = 
+        linkedComponentIdsForRole.has((item.id || '').toLowerCase()) ||
+        linkedComponentIdsForRole.has((item.tagCode || '').toLowerCase());
+
+      return directAllowed || catAllowed || linkedAllowed;
     });
   },
 
   getMachines(): MachineItem[] {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.MACHINES);
-      return data ? JSON.parse(data) : INITIAL_MACHINES;
+      const list: MachineItem[] = data ? JSON.parse(data) : INITIAL_MACHINES;
+      return list.map(m => ({
+        ...m,
+        linkedComponents: Array.isArray(m.linkedComponents) ? m.linkedComponents : []
+      }));
     } catch {
       return INITIAL_MACHINES;
     }

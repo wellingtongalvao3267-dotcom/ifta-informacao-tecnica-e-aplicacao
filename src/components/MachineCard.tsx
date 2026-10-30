@@ -18,13 +18,19 @@ export const MachineCard: React.FC<MachineCardProps> = ({
   onSelect,
   onOpenQr
 }) => {
-  // Filter linked components visible to the current role
-  const visibleLinked = machine.linkedComponents.filter(link => {
+  // Filter linked components visible to the current role (safe check)
+  const links = machine.linkedComponents || [];
+  const visibleLinked = links.filter(link => {
     if (userRole === 'CDI' || userRole === 'DESENVOLVEDOR') return true;
-    return link.allowedRoles.includes(userRole);
+    if (!link.allowedRoles || link.allowedRoles.length === 0) return true;
+    return (
+      link.allowedRoles.includes(userRole) ||
+      (userRole === 'MECANICA' && (link.allowedRoles.includes('MANUTENCAO') || link.allowedRoles.includes('MECANICA'))) ||
+      (userRole === 'ELETRICA' && link.allowedRoles.includes('ELETRICA'))
+    );
   });
 
-  const totalLinked = machine.linkedComponents.length;
+  const totalLinked = links.length;
 
   return (
     <div className="group relative bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-xl overflow-hidden shadow-lg transition-all duration-200 flex flex-col justify-between hover:shadow-amber-500/5">
@@ -116,7 +122,7 @@ export const MachineCard: React.FC<MachineCardProps> = ({
               <span>Itens vinculados:</span>
             </span>
             <span className="font-mono font-semibold text-white text-[11px]">
-              {userRole === 'DESENVOLVEDOR' ? (
+              {userRole === 'CDI' || userRole === 'DESENVOLVEDOR' ? (
                 <span>{totalLinked} componentes</span>
               ) : (
                 <span className="text-amber-400">
@@ -129,7 +135,11 @@ export const MachineCard: React.FC<MachineCardProps> = ({
           {/* Mini tags of items visible */}
           <div className="flex flex-wrap gap-1 mt-1">
             {visibleLinked.slice(0, 3).map(link => {
-              const comp = allComponents.find(c => c.id === link.componentId);
+              const comp = allComponents.find(c => 
+                c.id === link.componentId || 
+                c.tagCode.toUpperCase() === link.componentId.toUpperCase() ||
+                c.id.toLowerCase() === link.componentId.toLowerCase()
+              );
               return (
                 <span
                   key={link.componentId}
@@ -162,9 +172,9 @@ export const MachineCard: React.FC<MachineCardProps> = ({
               <Zap className="w-3 h-3" /> Elétrica
             </span>
           )}
-          {userRole === 'DESENVOLVEDOR' && (
+          {(userRole === 'CDI' || userRole === 'DESENVOLVEDOR') && (
             <span className="flex items-center gap-1 text-emerald-400">
-              <Shield className="w-3 h-3" /> Desenvolvedor
+              <Shield className="w-3 h-3" /> CDI
             </span>
           )}
         </div>

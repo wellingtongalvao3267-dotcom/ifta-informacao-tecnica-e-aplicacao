@@ -11,7 +11,7 @@ interface LoginScreenProps {
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onShowSplashAgain }) => {
   const [selectedRole, setSelectedRole] = useState<UserRole>('MECANICA');
   const [username, setUsername] = useState('MECANICA');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState('bello2026');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -21,13 +21,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onShow
     setErrorMessage('');
     if (role === 'CDI' || role === 'DESENVOLVEDOR') {
       setUsername('CDI');
-      setPassword('');
+      setPassword('desenvolvedor@2026');
     } else if (role === 'MECANICA' || (role as string) === 'MANUTENCAO') {
       setUsername('MECANICA');
-      setPassword('');
+      setPassword('bello2026');
     } else if (role === 'ELETRICA') {
       setUsername('ELETRICA');
-      setPassword('');
+      setPassword('bello0099');
     }
   };
 
@@ -186,6 +186,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onShow
                   placeholder="Digite sua senha"
                   className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                 />
+              </div>
+              <div className="mt-1 flex items-center justify-between text-[11px] text-slate-400">
+                <span>Credencial padrão: <strong className="text-amber-400 font-mono">{selectedRole === 'CDI' || selectedRole === 'DESENVOLVEDOR' ? 'desenvolvedor@2026' : selectedRole === 'ELETRICA' ? 'bello0099' : 'bello2026'}</strong></span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedRole === 'CDI' || selectedRole === 'DESENVOLVEDOR') setPassword('desenvolvedor@2026');
+                    else if (selectedRole === 'ELETRICA') setPassword('bello0099');
+                    else setPassword('bello2026');
+                  }}
+                  className="text-amber-400 hover:underline cursor-pointer"
+                >
+                  Preencher
+                </button>
               </div>
             </div>
 
