@@ -214,7 +214,21 @@ export const storageService = {
             const event = JSON.parse(e.data);
             if (!event || !event.type) return;
 
-            if (event.type === 'COMPONENT_SAVED' && event.data) {
+            // Snapshot recebido ao conectar imediatamente
+            if (event.type === 'CONNECTED' && event.data) {
+              let updated = false;
+              if (Array.isArray(event.data.components) && event.data.components.length > 0) {
+                localStorage.setItem(STORAGE_KEYS.COMPONENTS, JSON.stringify(event.data.components));
+                updated = true;
+              }
+              if (Array.isArray(event.data.machines) && event.data.machines.length > 0) {
+                localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(event.data.machines));
+                updated = true;
+              }
+              if (updated) {
+                window.dispatchEvent(new CustomEvent('ifta_data_synced'));
+              }
+            } else if (event.type === 'COMPONENT_SAVED' && event.data) {
               const comp: ComponentItem = event.data;
               const items = this.getComponents();
               const idx = items.findIndex(c => c.id === comp.id || c.tagCode.toUpperCase() === comp.tagCode.toUpperCase());
@@ -229,7 +243,7 @@ export const storageService = {
                   type: 'component',
                   action: idx >= 0 ? 'edit' : 'create',
                   item: comp,
-                  message: `Peça "${comp.name}" (${comp.tagCode}) foi atualizada no catálogo!`
+                  message: `Peça "${comp.name}" (${comp.tagCode}) atualizada no catálogo!`
                 }
               }));
               window.dispatchEvent(new CustomEvent('ifta_data_synced'));
@@ -261,7 +275,7 @@ export const storageService = {
                   type: 'machine',
                   action: idx >= 0 ? 'edit' : 'create',
                   item: machine,
-                  message: `Máquina "${machine.name}" (${machine.tagCode}) foi atualizada no catálogo!`
+                  message: `Máquina "${machine.name}" (${machine.tagCode}) atualizada no catálogo!`
                 }
               }));
               window.dispatchEvent(new CustomEvent('ifta_data_synced'));
@@ -295,7 +309,7 @@ export const storageService = {
           if (reconnectTimeout) clearTimeout(reconnectTimeout);
           reconnectTimeout = setTimeout(() => {
             connect();
-          }, 6000);
+          }, 4000);
         };
       } catch {}
     };
@@ -308,24 +322,30 @@ export const storageService = {
       connect();
     });
 
-    // Sync on page focus or tab visibility
+    // Sincronização instantânea ao alternar abas ou focar a tela no celular
+    window.addEventListener('focus', () => {
+      this.syncWithServer().catch(() => {});
+    });
+
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         this.syncWithServer().catch(() => {});
       }
     });
 
-    // Periodic safety sync every 15s to guarantee 100% data consistency
+    // Polling inteligente e ultra-rápido a cada 3s para garantir 100% de sincronismo em celulares
     setInterval(() => {
       if (typeof navigator !== 'undefined' && navigator.onLine && typeof document !== 'undefined' && document.visibilityState === 'visible') {
         this.syncWithServer().catch(() => {});
       }
-    }, 15000);
+    }, 3000);
   },
 
   async syncWithServer(): Promise<{ success: boolean; source: 'server' | 'offline' }> {
     try {
-      const res = await fetch('/api/data');
+      const res = await fetch(`/api/data?_t=${Date.now()}`, {
+        headers: { 'Cache-Control': 'no-cache, no-store' }
+      });
       if (!res.ok) throw new Error('Falha na resposta do servidor');
       const serverDb = await res.json();
 
@@ -336,12 +356,27 @@ export const storageService = {
 
         // Se o servidor possui dados salvos, atualiza o cache local
         if (serverDb.components.length > 0 || serverDb.machines.length > 0) {
-          localStorage.setItem(STORAGE_KEYS.COMPONENTS, JSON.stringify(serverDb.components));
-          localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(serverDb.machines));
-          if (Array.isArray(serverDb.categoryPermissions)) {
-            localStorage.setItem(STORAGE_KEYS.CATEGORY_PERMISSIONS, JSON.stringify(serverDb.categoryPermissions));
+          const localCompsStr = JSON.stringify(localComps);
+          const serverCompsStr = JSON.stringify(serverDb.components);
+          const localMachinesStr = JSON.stringify(localMachines);
+          const serverMachinesStr = JSON.stringify(serverDb.machines);
+
+          if (localCompsStr !== serverCompsStr) {
+            localStorage.setItem(STORAGE_KEYS.COMPONENTS, serverCompsStr);
+            changed = true;
           }
-          changed = true;
+          if (localMachinesStr !== serverMachinesStr) {
+            localStorage.setItem(STORAGE_KEYS.MACHINES, serverMachinesStr);
+            changed = true;
+          }
+          if (Array.isArray(serverDb.categoryPermissions)) {
+            const localPermsStr = JSON.stringify(this.getCategoryPermissions());
+            const serverPermsStr = JSON.stringify(serverDb.categoryPermissions);
+            if (localPermsStr !== serverPermsStr) {
+              localStorage.setItem(STORAGE_KEYS.CATEGORY_PERMISSIONS, serverPermsStr);
+              changed = true;
+            }
+          }
         } else if (localComps.length > 0 || localMachines.length > 0) {
           // Se o servidor estiver vazio, envia os dados locais para persistir no Docker
           await fetch('/api/data', {
@@ -467,9 +502,9 @@ export const storageService = {
     return candidate;
   },
 
-  saveComponent(item: ComponentItem): ComponentItem {
+  async saveComponent(item: ComponentItem): Promise<ComponentItem> {
     const items = this.getComponents();
-    const idx = items.findIndex(i => i.id === item.id);
+    const idx = items.findIndex(i => i.id === item.id || (item.tagCode && i.tagCode.toUpperCase() === item.tagCode.trim().toUpperCase()));
     const now = new Date().toISOString();
     const cleanTag = item.tagCode.trim().toUpperCase();
     const cleanQr = `IFTA:${cleanTag}`;
@@ -484,7 +519,6 @@ export const storageService = {
     let resultItem: ComponentItem;
     if (idx >= 0) {
       items[idx] = normalizedItem;
-      this.saveComponents(items);
       resultItem = items[idx];
     } else {
       const newItem = { 
@@ -493,26 +527,49 @@ export const storageService = {
         createdAt: now 
       };
       items.unshift(newItem);
-      this.saveComponents(items);
       resultItem = newItem;
     }
 
-    // Persistência direta no Docker / backend
-    fetch('/api/components', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(resultItem)
-    }).catch(() => {});
+    // Salva imediatamente no localStorage para exibição imediata no dispositivo
+    localStorage.setItem(STORAGE_KEYS.COMPONENTS, JSON.stringify(items));
+    window.dispatchEvent(new CustomEvent('ifta_data_synced'));
+
+    // Persistência direta e atômica no Docker / backend Express com broadcast imediato
+    try {
+      const res = await fetch('/api/components', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(resultItem)
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.component) {
+          resultItem = json.component;
+          const currentItems = this.getComponents();
+          const targetIdx = currentItems.findIndex(c => c.id === resultItem.id || c.tagCode.toUpperCase() === resultItem.tagCode.toUpperCase());
+          if (targetIdx >= 0) {
+            currentItems[targetIdx] = resultItem;
+          } else {
+            currentItems.unshift(resultItem);
+          }
+          localStorage.setItem(STORAGE_KEYS.COMPONENTS, JSON.stringify(currentItems));
+          window.dispatchEvent(new CustomEvent('ifta_data_synced'));
+        }
+      }
+    } catch (err) {
+      console.warn('[STORAGE] Erro ao sincronizar peça com o servidor:', err);
+    }
 
     return resultItem;
   },
 
-  deleteComponent(id: string): boolean {
+  async deleteComponent(id: string): Promise<boolean> {
     const items = this.getComponents();
-    const filtered = items.filter(i => i.id !== id);
+    const filtered = items.filter(i => i.id !== id && i.tagCode !== id);
     if (filtered.length !== items.length) {
-      this.saveComponents(filtered);
-      // Clean up linked components in machines if any
+      localStorage.setItem(STORAGE_KEYS.COMPONENTS, JSON.stringify(filtered));
+
+      // Atualiza componentes vinculados nas máquinas
       const machines = this.getMachines();
       let machinesChanged = false;
       const updatedMachines = machines.map(m => {
@@ -526,13 +583,19 @@ export const storageService = {
         return m;
       });
       if (machinesChanged) {
-        this.saveMachines(updatedMachines);
+        localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(updatedMachines));
       }
 
+      window.dispatchEvent(new CustomEvent('ifta_data_synced'));
+
       // Exclusão definitiva no backend / Docker
-      fetch(`/api/components/${encodeURIComponent(id)}`, {
-        method: 'DELETE'
-      }).catch(() => {});
+      try {
+        await fetch(`/api/components/${encodeURIComponent(id)}`, {
+          method: 'DELETE'
+        });
+      } catch (err) {
+        console.warn('[STORAGE] Erro ao excluir peça no servidor:', err);
+      }
 
       return true;
     }
@@ -636,9 +699,9 @@ export const storageService = {
     return candidate;
   },
 
-  saveMachine(machine: MachineItem): MachineItem {
+  async saveMachine(machine: MachineItem): Promise<MachineItem> {
     const machines = this.getMachines();
-    const idx = machines.findIndex(m => m.id === machine.id);
+    const idx = machines.findIndex(m => m.id === machine.id || (machine.tagCode && m.tagCode.toUpperCase() === machine.tagCode.trim().toUpperCase()));
     const now = new Date().toISOString();
     const cleanTag = machine.tagCode.trim().toUpperCase();
     const cleanQr = `IFTA:${cleanTag}`;
@@ -653,7 +716,6 @@ export const storageService = {
     let resultMachine: MachineItem;
     if (idx >= 0) {
       machines[idx] = normalizedMachine;
-      this.saveMachines(machines);
       resultMachine = machines[idx];
     } else {
       const newMachine: MachineItem = {
@@ -662,30 +724,57 @@ export const storageService = {
         createdAt: now
       };
       machines.unshift(newMachine);
-      this.saveMachines(machines);
       resultMachine = newMachine;
     }
 
-    // Persistência direta no Docker / backend
-    fetch('/api/machines', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(resultMachine)
-    }).catch(() => {});
+    // Salva localmente de imediato
+    localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(machines));
+    window.dispatchEvent(new CustomEvent('ifta_data_synced'));
+
+    // Persistência direta e atômica no Docker / backend com broadcast
+    try {
+      const res = await fetch('/api/machines', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(resultMachine)
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.machine) {
+          resultMachine = json.machine;
+          const currentMachines = this.getMachines();
+          const targetIdx = currentMachines.findIndex(m => m.id === resultMachine.id || m.tagCode.toUpperCase() === resultMachine.tagCode.toUpperCase());
+          if (targetIdx >= 0) {
+            currentMachines[targetIdx] = resultMachine;
+          } else {
+            currentMachines.unshift(resultMachine);
+          }
+          localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(currentMachines));
+          window.dispatchEvent(new CustomEvent('ifta_data_synced'));
+        }
+      }
+    } catch (err) {
+      console.warn('[STORAGE] Erro ao sincronizar máquina com o servidor:', err);
+    }
 
     return resultMachine;
   },
 
-  deleteMachine(id: string): boolean {
+  async deleteMachine(id: string): Promise<boolean> {
     const machines = this.getMachines();
-    const filtered = machines.filter(m => m.id !== id);
+    const filtered = machines.filter(m => m.id !== id && m.tagCode !== id);
     if (filtered.length !== machines.length) {
-      this.saveMachines(filtered);
+      localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(filtered));
+      window.dispatchEvent(new CustomEvent('ifta_data_synced'));
 
       // Exclusão definitiva no backend / Docker
-      fetch(`/api/machines/${encodeURIComponent(id)}`, {
-        method: 'DELETE'
-      }).catch(() => {});
+      try {
+        await fetch(`/api/machines/${encodeURIComponent(id)}`, {
+          method: 'DELETE'
+        });
+      } catch (err) {
+        console.warn('[STORAGE] Erro ao excluir máquina no servidor:', err);
+      }
 
       return true;
     }

@@ -1,6 +1,28 @@
 {
   "components": [
     {
+      "id": "comp-test-realtime-1",
+      "tagCode": "TEST-RT-01",
+      "name": "Peça Teste Realtime",
+      "category": "Mecânica",
+      "visibleToRoles": [
+        "CDI",
+        "MECANICA",
+        "ELETRICA"
+      ],
+      "qrCodeData": "IFTA:TEST-RT-01",
+      "updatedAt": "2026-10-31T19:39:42.630Z",
+      "createdAt": "2026-10-31T19:39:42.630Z"
+    },
+    {
+      "id": "test-123",
+      "tagCode": "TEST-999",
+      "name": "Peça Teste",
+      "qrCodeData": "IFTA:TEST-999",
+      "updatedAt": "2026-10-31T19:36:35.089Z",
+      "createdAt": "2026-10-31T19:36:35.089Z"
+    },
+    {
       "id": "comp-001",
       "tagCode": "MOT-IND-042",
       "name": "Motor Elétrico Trifásico de Indução 7.5kW (10CV)",
@@ -1154,5 +1176,5 @@
     }
   ],
   "version": "2026.3",
-  "lastUpdated": "2026-10-31T18:36:29.607Z"
+  "lastUpdated": "2026-10-31T19:39:42.630Z"
 }

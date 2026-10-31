@@ -41,6 +41,23 @@ function getInitialDatabase(): IftaDatabase {
   };
 }
 
+let memoryDbCache: IftaDatabase | null = null;
+
+function saveDatabase(db: IftaDatabase): boolean {
+  try {
+    db.lastUpdated = new Date().toISOString();
+    memoryDbCache = db;
+    const tempFile = `${DATA_FILE}.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}.tmp`;
+    fs.writeFileSync(tempFile, JSON.stringify(db, null, 2), 'utf-8');
+    fs.renameSync(tempFile, DATA_FILE);
+    return true;
+  } catch (err) {
+    console.error('[DATABASE] Erro ao salvar arquivo persistente no Docker/disco:', err);
+    return false;
+  }
+}
+
+// Database representation for persistent JSON storage in Docker container
 function loadDatabase(): IftaDatabase {
   try {
     if (fs.existsSync(DATA_FILE)) {
@@ -73,28 +90,21 @@ function loadDatabase(): IftaDatabase {
         if (needsSave) {
           saveDatabase(parsed);
         }
+        memoryDbCache = parsed;
         return parsed;
       }
     }
   } catch (err) {
-    console.error('[DATABASE] Erro ao carregar arquivo de dados, inicializando novo:', err);
+    console.error('[DATABASE] Erro ao carregar arquivo de dados:', err);
+    if (memoryDbCache) {
+      console.log('[DATABASE] Restaurando do cache de memória ativo.');
+      return memoryDbCache;
+    }
   }
   const initial = getInitialDatabase();
   saveDatabase(initial);
+  memoryDbCache = initial;
   return initial;
-}
-
-function saveDatabase(db: IftaDatabase): boolean {
-  try {
-    db.lastUpdated = new Date().toISOString();
-    const tempFile = `${DATA_FILE}.tmp`;
-    fs.writeFileSync(tempFile, JSON.stringify(db, null, 2), 'utf-8');
-    fs.renameSync(tempFile, DATA_FILE);
-    return true;
-  } catch (err) {
-    console.error('[DATABASE] Erro ao salvar arquivo persistente no Docker/disco:', err);
-    return false;
-  }
 }
 
 // Initialize database on server startup
@@ -105,6 +115,15 @@ console.log(`[IFTA DATABASE] Registros carregados: ${initialDb.machines.length} 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Anti-cache middleware for all API routes - prevents mobile browsers/proxies from serving stale data
+app.use('/api', (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+  next();
+});
 
 // Active real-time multi-user client streams (SSE)
 const sseClients = new Set<express.Response>();
@@ -136,22 +155,30 @@ app.get('/api/health', (req, res) => {
 
 // SSE endpoint for instant automatic real-time synchronization between users
 app.get('/api/realtime', (req, res) => {
-  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no'); // ESSENCIAL PARA PROXY NGINX E CLOUD RUN NÃO BLOQUEAREM SSE
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.flushHeaders?.();
 
-  // Send initial handshake
+  const currentDb = loadDatabase();
+
+  // Send initial handshake with current state snapshot immediately
   res.write(`data: ${JSON.stringify({ 
     type: 'CONNECTED', 
     timestamp: new Date().toISOString(),
-    message: 'Conexão em tempo real estabelecida com sucesso.'
+    message: 'Conexão em tempo real estabelecida com sucesso.',
+    data: {
+      components: currentDb.components,
+      machines: currentDb.machines,
+      categoryPermissions: currentDb.categoryPermissions
+    }
   })}\n\n`);
 
   sseClients.add(res);
 
-  // Heartbeat ping every 20 seconds to prevent timeout
+  // Heartbeat ping every 15 seconds to prevent timeout on mobile devices
   const pingInterval = setInterval(() => {
     try {
       res.write(`: ping\n\n`);
@@ -159,7 +186,7 @@ app.get('/api/realtime', (req, res) => {
       clearInterval(pingInterval);
       sseClients.delete(res);
     }
-  }, 20000);
+  }, 15000);
 
   req.on('close', () => {
     clearInterval(pingInterval);
