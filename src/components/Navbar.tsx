@@ -13,6 +13,7 @@ interface NavbarProps {
   onOpenOfflineManager?: () => void;
   onLogout: () => void;
   isAdminOpen?: boolean;
+  isRealtimeConnected?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -24,7 +25,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenEditProfile,
   onOpenOfflineManager,
   onLogout,
-  isAdminOpen
+  isAdminOpen,
+  isRealtimeConnected = true
 }) => {
   const getRoleIcon = () => {
     switch (currentUser.role) {
@@ -89,6 +91,15 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Right Actions: QR Code Scanner + Developer Tools + User Profile */}
         <div className="flex items-center gap-2 shrink-0">
           
+          {/* Indicador de Sincronização em Tempo Real com o Banco */}
+          <div 
+            className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono text-slate-300"
+            title={isRealtimeConnected ? "Tempo Real Ativo: Máquinas e peças cadastradas pelo CDI chegam instantaneamente a todos os usuários." : "Reconectando canal em tempo real..."}
+          >
+            <span className={`w-2 h-2 rounded-full ${isRealtimeConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+            <span className="hidden xl:inline">{isRealtimeConnected ? 'Tempo Real Ativo' : 'Reconectando...'}</span>
+          </div>
+
           {/* Canto superior direito: Opção para escanear QR Code */}
           <button
             type="button"

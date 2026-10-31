@@ -185,11 +185,142 @@ export const storageService = {
 
     // Sincronizar automaticamente com o servidor backend/Docker persistente
     this.syncWithServer().catch(() => {});
-    if (typeof window !== 'undefined') {
-      window.addEventListener('online', () => {
+    
+    // Iniciar canal em tempo real para sincronização instantânea entre múltiplos usuários
+    this.initRealtime();
+  },
+
+  initRealtime() {
+    if (typeof window === 'undefined') return;
+
+    let eventSource: EventSource | null = null;
+    let reconnectTimeout: any = null;
+
+    const connect = () => {
+      if (typeof EventSource === 'undefined') return;
+      try {
+        if (eventSource) {
+          try { eventSource.close(); } catch {}
+        }
+
+        eventSource = new EventSource('/api/realtime');
+
+        eventSource.onopen = () => {
+          window.dispatchEvent(new CustomEvent('ifta_realtime_status', { detail: { connected: true } }));
+        };
+
+        eventSource.onmessage = (e) => {
+          try {
+            const event = JSON.parse(e.data);
+            if (!event || !event.type) return;
+
+            if (event.type === 'COMPONENT_SAVED' && event.data) {
+              const comp: ComponentItem = event.data;
+              const items = this.getComponents();
+              const idx = items.findIndex(c => c.id === comp.id || c.tagCode.toUpperCase() === comp.tagCode.toUpperCase());
+              if (idx >= 0) {
+                items[idx] = comp;
+              } else {
+                items.unshift(comp);
+              }
+              localStorage.setItem(STORAGE_KEYS.COMPONENTS, JSON.stringify(items));
+              window.dispatchEvent(new CustomEvent('ifta_realtime_notification', {
+                detail: {
+                  type: 'component',
+                  action: idx >= 0 ? 'edit' : 'create',
+                  item: comp,
+                  message: `Peça "${comp.name}" (${comp.tagCode}) foi atualizada no catálogo!`
+                }
+              }));
+              window.dispatchEvent(new CustomEvent('ifta_data_synced'));
+            } else if (event.type === 'COMPONENT_DELETED' && event.data) {
+              const { id } = event.data;
+              const items = this.getComponents().filter(c => c.id !== id && c.tagCode !== id);
+              localStorage.setItem(STORAGE_KEYS.COMPONENTS, JSON.stringify(items));
+              window.dispatchEvent(new CustomEvent('ifta_realtime_notification', {
+                detail: {
+                  type: 'component',
+                  action: 'delete',
+                  id,
+                  message: `Uma peça foi removida do catálogo.`
+                }
+              }));
+              window.dispatchEvent(new CustomEvent('ifta_data_synced'));
+            } else if (event.type === 'MACHINE_SAVED' && event.data) {
+              const machine: MachineItem = event.data;
+              const machines = this.getMachines();
+              const idx = machines.findIndex(m => m.id === machine.id || m.tagCode.toUpperCase() === machine.tagCode.toUpperCase());
+              if (idx >= 0) {
+                machines[idx] = machine;
+              } else {
+                machines.unshift(machine);
+              }
+              localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(machines));
+              window.dispatchEvent(new CustomEvent('ifta_realtime_notification', {
+                detail: {
+                  type: 'machine',
+                  action: idx >= 0 ? 'edit' : 'create',
+                  item: machine,
+                  message: `Máquina "${machine.name}" (${machine.tagCode}) foi atualizada no catálogo!`
+                }
+              }));
+              window.dispatchEvent(new CustomEvent('ifta_data_synced'));
+            } else if (event.type === 'MACHINE_DELETED' && event.data) {
+              const { id } = event.data;
+              const machines = this.getMachines().filter(m => m.id !== id && m.tagCode !== id);
+              localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(machines));
+              window.dispatchEvent(new CustomEvent('ifta_realtime_notification', {
+                detail: {
+                  type: 'machine',
+                  action: 'delete',
+                  id,
+                  message: `Uma máquina foi excluída do sistema.`
+                }
+              }));
+              window.dispatchEvent(new CustomEvent('ifta_data_synced'));
+            } else if (event.type === 'DATABASE_UPDATED' && event.data) {
+              if (Array.isArray(event.data.components)) {
+                localStorage.setItem(STORAGE_KEYS.COMPONENTS, JSON.stringify(event.data.components));
+              }
+              if (Array.isArray(event.data.machines)) {
+                localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(event.data.machines));
+              }
+              window.dispatchEvent(new CustomEvent('ifta_data_synced'));
+            }
+          } catch {}
+        };
+
+        eventSource.onerror = () => {
+          window.dispatchEvent(new CustomEvent('ifta_realtime_status', { detail: { connected: false } }));
+          if (reconnectTimeout) clearTimeout(reconnectTimeout);
+          reconnectTimeout = setTimeout(() => {
+            connect();
+          }, 6000);
+        };
+      } catch {}
+    };
+
+    connect();
+
+    // Reconnect and sync on network restore
+    window.addEventListener('online', () => {
+      this.syncWithServer().catch(() => {});
+      connect();
+    });
+
+    // Sync on page focus or tab visibility
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
         this.syncWithServer().catch(() => {});
-      });
-    }
+      }
+    });
+
+    // Periodic safety sync every 15s to guarantee 100% data consistency
+    setInterval(() => {
+      if (typeof navigator !== 'undefined' && navigator.onLine && typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        this.syncWithServer().catch(() => {});
+      }
+    }, 15000);
   },
 
   async syncWithServer(): Promise<{ success: boolean; source: 'server' | 'offline' }> {

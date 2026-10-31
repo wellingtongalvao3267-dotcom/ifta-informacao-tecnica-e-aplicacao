@@ -238,7 +238,7 @@ export const OfflineManagerModal: React.FC<OfflineManagerModalProps> = ({
             </div>
 
             <p className="text-[11px] text-slate-300 leading-relaxed">
-              Todas as <strong>máquinas</strong> e <strong>peças</strong> cadastradas são salvas de forma <strong>permanente</strong> no volume do contêiner Docker. Os dados permanecem preservados mesmo após reiniciar o sistema, reiniciar o Docker ou limpar o cache do navegador, até que um item seja explicitamente excluído.
+              Todas as <strong>máquinas</strong> e <strong>peças</strong> cadastradas são salvas de forma <strong>permanente</strong> no volume do contêiner Docker e transmitidas <strong>instantaneamente em tempo real</strong> para todos os outros aparelhos conectados. Os dados permanecem preservados mesmo após reiniciar o sistema ou o Docker, até que um item seja explicitamente excluído.
             </p>
 
             <button

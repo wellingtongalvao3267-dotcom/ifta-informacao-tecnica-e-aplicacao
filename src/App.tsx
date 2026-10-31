@@ -89,15 +89,31 @@ export default function App() {
     }
   }, [currentUser]);
 
+  const [isRealtimeConnected, setIsRealtimeConnected] = useState(true);
+
   useEffect(() => {
     const handleSync = () => {
       if (currentUser) {
         refreshComponents();
       }
     };
+    const handleStatus = (e: any) => {
+      setIsRealtimeConnected(!!e.detail?.connected);
+    };
+    const handleRealtimeNotification = (e: any) => {
+      const detail = e.detail;
+      if (detail && detail.message) {
+        showSaveToast(`⚡ ${detail.message}`);
+      }
+    };
+
     window.addEventListener('ifta_data_synced', handleSync);
+    window.addEventListener('ifta_realtime_status', handleStatus);
+    window.addEventListener('ifta_realtime_notification', handleRealtimeNotification);
     return () => {
       window.removeEventListener('ifta_data_synced', handleSync);
+      window.removeEventListener('ifta_realtime_status', handleStatus);
+      window.removeEventListener('ifta_realtime_notification', handleRealtimeNotification);
     };
   }, [currentUser]);
 
@@ -363,6 +379,7 @@ export default function App() {
         onOpenOfflineManager={() => setIsOfflineModalOpen(true)}
         onLogout={handleLogout}
         isAdminOpen={isAdminPanelOpen}
+        isRealtimeConnected={isRealtimeConnected}
       />
 
       {/* Offline Status Badge / Alert Bar */}

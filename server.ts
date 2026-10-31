@@ -106,6 +106,20 @@ const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Active real-time multi-user client streams (SSE)
+const sseClients = new Set<express.Response>();
+
+function broadcastRealtime(event: { type: string; data?: any; message?: string; timestamp: string }) {
+  const payload = `data: ${JSON.stringify(event)}\n\n`;
+  for (const client of sseClients) {
+    try {
+      client.write(payload);
+    } catch {
+      sseClients.delete(client);
+    }
+  }
+}
+
 // REST API Endpoints for persistent storage
 app.get('/api/health', (req, res) => {
   const currentDb = loadDatabase();
@@ -115,7 +129,41 @@ app.get('/api/health', (req, res) => {
     databaseFile: DATA_FILE,
     machinesCount: currentDb.machines.length,
     componentsCount: currentDb.components.length,
+    realtimeClientsConnected: sseClients.size,
     lastUpdated: currentDb.lastUpdated
+  });
+});
+
+// SSE endpoint for instant automatic real-time synchronization between users
+app.get('/api/realtime', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.flushHeaders?.();
+
+  // Send initial handshake
+  res.write(`data: ${JSON.stringify({ 
+    type: 'CONNECTED', 
+    timestamp: new Date().toISOString(),
+    message: 'Conexão em tempo real estabelecida com sucesso.'
+  })}\n\n`);
+
+  sseClients.add(res);
+
+  // Heartbeat ping every 20 seconds to prevent timeout
+  const pingInterval = setInterval(() => {
+    try {
+      res.write(`: ping\n\n`);
+    } catch {
+      clearInterval(pingInterval);
+      sseClients.delete(res);
+    }
+  }, 20000);
+
+  req.on('close', () => {
+    clearInterval(pingInterval);
+    sseClients.delete(res);
   });
 });
 
@@ -133,6 +181,19 @@ app.post('/api/data', (req, res) => {
   if (Array.isArray(users)) currentDb.users = users;
   if (Array.isArray(logs)) currentDb.logs = logs;
   saveDatabase(currentDb);
+
+  // Broadcast to all active users
+  broadcastRealtime({
+    type: 'DATABASE_UPDATED',
+    data: {
+      components: currentDb.components,
+      machines: currentDb.machines,
+      categoryPermissions: currentDb.categoryPermissions
+    },
+    message: 'Banco de dados técnico sincronizado e atualizado.',
+    timestamp: currentDb.lastUpdated
+  });
+
   res.json({ success: true, lastUpdated: currentDb.lastUpdated });
 });
 
@@ -159,6 +220,12 @@ app.post('/api/components', (req, res) => {
   }
 
   saveDatabase(currentDb);
+  broadcastRealtime({
+    type: 'COMPONENT_SAVED',
+    data: normalizedComp,
+    message: `Peça "${normalizedComp.name}" (${normalizedComp.tagCode}) atualizada no catálogo.`,
+    timestamp: now
+  });
   res.json({ success: true, component: normalizedComp });
 });
 
@@ -177,6 +244,12 @@ app.delete('/api/components/:id', (req, res) => {
   });
 
   saveDatabase(currentDb);
+  broadcastRealtime({
+    type: 'COMPONENT_DELETED',
+    data: { id },
+    message: `Peça excluída do catálogo.`,
+    timestamp: new Date().toISOString()
+  });
   res.json({ success: true, removedCount: initialLen - currentDb.components.length });
 });
 
@@ -204,6 +277,12 @@ app.post('/api/machines', (req, res) => {
   }
 
   saveDatabase(currentDb);
+  broadcastRealtime({
+    type: 'MACHINE_SAVED',
+    data: normalizedMachine,
+    message: `Máquina "${normalizedMachine.name}" (${normalizedMachine.tagCode}) atualizada no catálogo.`,
+    timestamp: now
+  });
   res.json({ success: true, machine: normalizedMachine });
 });
 
@@ -214,6 +293,12 @@ app.delete('/api/machines/:id', (req, res) => {
   const initialLen = currentDb.machines.length;
   currentDb.machines = currentDb.machines.filter(m => m.id !== id && m.tagCode !== id);
   saveDatabase(currentDb);
+  broadcastRealtime({
+    type: 'MACHINE_DELETED',
+    data: { id },
+    message: `Máquina excluída do cadastro de ativos.`,
+    timestamp: new Date().toISOString()
+  });
   res.json({ success: true, removedCount: initialLen - currentDb.machines.length });
 });
 
