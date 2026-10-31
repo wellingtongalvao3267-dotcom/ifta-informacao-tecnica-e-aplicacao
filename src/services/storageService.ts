@@ -180,6 +180,57 @@ export const storageService = {
       current.displayName = 'CDI (Centro de Documentação Industrial)';
       this.setCurrentUser(current);
     }
+
+    // Sincronizar automaticamente com o servidor backend/Docker persistente
+    this.syncWithServer().catch(() => {});
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', () => {
+        this.syncWithServer().catch(() => {});
+      });
+    }
+  },
+
+  async syncWithServer(): Promise<{ success: boolean; source: 'server' | 'offline' }> {
+    try {
+      const res = await fetch('/api/data');
+      if (!res.ok) throw new Error('Falha na resposta do servidor');
+      const serverDb = await res.json();
+
+      if (serverDb && Array.isArray(serverDb.components) && Array.isArray(serverDb.machines)) {
+        let changed = false;
+        const localComps = this.getComponents();
+        const localMachines = this.getMachines();
+
+        // Se o servidor possui dados salvos, atualiza o cache local
+        if (serverDb.components.length > 0 || serverDb.machines.length > 0) {
+          localStorage.setItem(STORAGE_KEYS.COMPONENTS, JSON.stringify(serverDb.components));
+          localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(serverDb.machines));
+          if (Array.isArray(serverDb.categoryPermissions)) {
+            localStorage.setItem(STORAGE_KEYS.CATEGORY_PERMISSIONS, JSON.stringify(serverDb.categoryPermissions));
+          }
+          changed = true;
+        } else if (localComps.length > 0 || localMachines.length > 0) {
+          // Se o servidor estiver vazio, envia os dados locais para persistir no Docker
+          await fetch('/api/data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              components: localComps,
+              machines: localMachines,
+              categoryPermissions: this.getCategoryPermissions()
+            })
+          });
+        }
+
+        if (changed && typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('ifta_data_synced'));
+        }
+        return { success: true, source: 'server' };
+      }
+    } catch {
+      // Fallback offline: dados continuam salvos no localStorage
+    }
+    return { success: false, source: 'offline' };
   },
 
   getUsers(): UserAccount[] {
@@ -257,6 +308,11 @@ export const storageService = {
 
   saveComponents(items: ComponentItem[]) {
     localStorage.setItem(STORAGE_KEYS.COMPONENTS, JSON.stringify(items));
+    fetch('/api/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ components: items })
+    }).catch(() => {});
   },
 
   isComponentTagUnique(tagCode: string, excludeId?: string): boolean {
@@ -292,10 +348,11 @@ export const storageService = {
       updatedAt: now
     };
     
+    let resultItem: ComponentItem;
     if (idx >= 0) {
       items[idx] = normalizedItem;
       this.saveComponents(items);
-      return items[idx];
+      resultItem = items[idx];
     } else {
       const newItem = { 
         ...normalizedItem, 
@@ -304,8 +361,17 @@ export const storageService = {
       };
       items.unshift(newItem);
       this.saveComponents(items);
-      return newItem;
+      resultItem = newItem;
     }
+
+    // Persistência direta no Docker / backend
+    fetch('/api/components', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(resultItem)
+    }).catch(() => {});
+
+    return resultItem;
   },
 
   deleteComponent(id: string): boolean {
@@ -329,6 +395,12 @@ export const storageService = {
       if (machinesChanged) {
         this.saveMachines(updatedMachines);
       }
+
+      // Exclusão definitiva no backend / Docker
+      fetch(`/api/components/${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      }).catch(() => {});
+
       return true;
     }
     return false;
@@ -405,6 +477,11 @@ export const storageService = {
 
   saveMachines(machines: MachineItem[]) {
     localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(machines));
+    fetch('/api/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ machines })
+    }).catch(() => {});
   },
 
   isMachineTagUnique(tagCode: string, excludeId?: string): boolean {
@@ -440,10 +517,11 @@ export const storageService = {
       updatedAt: now
     };
 
+    let resultMachine: MachineItem;
     if (idx >= 0) {
       machines[idx] = normalizedMachine;
       this.saveMachines(machines);
-      return machines[idx];
+      resultMachine = machines[idx];
     } else {
       const newMachine: MachineItem = {
         ...normalizedMachine,
@@ -452,8 +530,17 @@ export const storageService = {
       };
       machines.unshift(newMachine);
       this.saveMachines(machines);
-      return newMachine;
+      resultMachine = newMachine;
     }
+
+    // Persistência direta no Docker / backend
+    fetch('/api/machines', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(resultMachine)
+    }).catch(() => {});
+
+    return resultMachine;
   },
 
   deleteMachine(id: string): boolean {
@@ -461,6 +548,12 @@ export const storageService = {
     const filtered = machines.filter(m => m.id !== id);
     if (filtered.length !== machines.length) {
       this.saveMachines(filtered);
+
+      // Exclusão definitiva no backend / Docker
+      fetch(`/api/machines/${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      }).catch(() => {});
+
       return true;
     }
     return false;

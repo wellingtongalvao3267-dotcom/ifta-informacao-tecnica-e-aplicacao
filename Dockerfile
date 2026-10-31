@@ -24,17 +24,24 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOST=0.0.0.0
+ENV DATA_DIR=/app/data
 
-# Copy package manifests and install only production dependencies
+# Directory and Volume for persistent storage of machines and parts
+RUN mkdir -p /app/data
+VOLUME ["/app/data"]
+
+# Copy package manifests and install dependencies
 COPY package*.json ./
-RUN npm install --only=production
+RUN npm install
 
-# Copy compiled files from builder
+# Copy compiled files, server entry point, and data files
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/server.ts ./server.ts
 
 # Expose port 3000 for localhost testing
 EXPOSE 3000
 
-# Start server on 0.0.0.0:3000
-CMD ["npm", "run", "preview"]
+# Start Express server connected to the persistent database
+CMD ["npm", "start"]

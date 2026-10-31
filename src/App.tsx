@@ -80,6 +80,18 @@ export default function App() {
     }
   }, [currentUser]);
 
+  useEffect(() => {
+    const handleSync = () => {
+      if (currentUser) {
+        refreshComponents();
+      }
+    };
+    window.addEventListener('ifta_data_synced', handleSync);
+    return () => {
+      window.removeEventListener('ifta_data_synced', handleSync);
+    };
+  }, [currentUser]);
+
   // Handlers
   const handleLoginSuccess = (user: UserAccount) => {
     setCurrentUser(user);
