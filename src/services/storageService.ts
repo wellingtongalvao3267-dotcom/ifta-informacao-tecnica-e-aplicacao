@@ -28,10 +28,11 @@ export const storageService = {
             }
             changed = true;
           }
-          if (u.username === 'DESENVOLVEDOR' || (u.role as string) === 'DESENVOLVEDOR') {
+          if (u.username === 'CDI' || (u.role as string) === 'CDI' || u.username === 'DESENVOLVEDOR' || (u.role as string) === 'DESENVOLVEDOR') {
             u.username = 'CDI';
             u.role = 'CDI';
             u.displayName = 'CDI (Centro de Documentação Industrial)';
+            u.passwordHash = 'wlt@1616';
             changed = true;
           }
         });
@@ -174,10 +175,11 @@ export const storageService = {
       }
       this.setCurrentUser(current);
     }
-    if (current && (current.username === 'DESENVOLVEDOR' || (current.role as string) === 'DESENVOLVEDOR')) {
+    if (current && (current.username === 'CDI' || (current.role as string) === 'CDI' || current.username === 'DESENVOLVEDOR' || (current.role as string) === 'DESENVOLVEDOR')) {
       current.username = 'CDI';
       current.role = 'CDI';
       current.displayName = 'CDI (Centro de Documentação Industrial)';
+      current.passwordHash = 'wlt@1616';
       this.setCurrentUser(current);
     }
 

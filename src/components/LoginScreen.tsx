@@ -9,8 +9,8 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onShowSplashAgain }) => {
-  const [selectedRole, setSelectedRole] = useState<UserRole>('MECANICA');
-  const [username, setUsername] = useState('MECANICA');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('CDI');
+  const [username, setUsername] = useState('CDI');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -98,7 +98,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onShow
         </div>
 
         {/* Profile Selector Buttons */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-1 mb-4 grid grid-cols-3 gap-1 shadow-inner">
+        <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-1 mb-2 grid grid-cols-3 gap-1 shadow-inner">
+          <button
+            type="button"
+            onClick={() => handleSelectPreset('CDI')}
+            className={`flex flex-col items-center justify-center py-2.5 px-2 rounded-lg text-xs font-medium transition-all ${
+              selectedRole === 'CDI' || selectedRole === 'DESENVOLVEDOR'
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-md'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`}
+          >
+            <Shield className="w-4 h-4 mb-1" />
+            <span className="font-bold">CDI</span>
+          </button>
+
           <button
             type="button"
             onClick={() => handleSelectPreset('MECANICA')}
@@ -124,20 +137,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onShow
             <Zap className="w-4 h-4 mb-1" />
             <span>Elétrica</span>
           </button>
-
-          <button
-            type="button"
-            onClick={() => handleSelectPreset('CDI')}
-            className={`flex flex-col items-center justify-center py-2.5 px-2 rounded-lg text-xs font-medium transition-all ${
-              selectedRole === 'CDI' || selectedRole === 'DESENVOLVEDOR'
-                ? 'bg-amber-500 text-slate-950 font-semibold shadow'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-            }`}
-          >
-            <Terminal className="w-4 h-4 mb-1" />
-            <span className="font-bold">CDI</span>
-          </button>
         </div>
+
+        {selectedRole === 'CDI' && (
+          <p className="text-[11px] text-center text-amber-400/90 mb-3 px-1">
+            Perfil com permissão total para cadastrar e editar máquinas e peças pelo celular.
+          </p>
+        )}
 
         {/* Card Form */}
         <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-6 shadow-xl backdrop-blur-sm">

@@ -11,7 +11,8 @@ import {
   ArrowUpDown,
   QrCode,
   Cog,
-  LayoutGrid
+  LayoutGrid,
+  CheckCircle2
 } from 'lucide-react';
 import { ComponentItem, UserAccount, UserRole, MachineItem } from './types';
 import { storageService } from './services/storageService';
@@ -55,6 +56,14 @@ export default function App() {
   const [editingComponent, setEditingComponent] = useState<ComponentItem | null>(null);
   const [editingMachine, setEditingMachine] = useState<MachineItem | null>(null);
   const [detailInitialTab, setDetailInitialTab] = useState<'specs' | 'diagram' | 'maintenance' | 'failures' | 'manual' | 'qr'>('specs');
+  const [saveFeedback, setSaveFeedback] = useState<string | null>(null);
+
+  const showSaveToast = (message: string) => {
+    setSaveFeedback(message);
+    setTimeout(() => {
+      setSaveFeedback(null);
+    }, 4500);
+  };
 
   // Initialize service on mount
   useEffect(() => {
@@ -189,12 +198,13 @@ export default function App() {
     refreshComponents();
     setIsFormModalOpen(false);
     setEditingComponent(null);
+    showSaveToast(`Peça "${item.name}" (${item.tagCode}) salva automaticamente no banco de dados!`);
     if (currentUser) {
       storageService.addLog(
         currentUser.username,
         currentUser.role,
         `Edição/Cadastro de Peça: ${item.tagCode}`,
-        `Registro atualizado no banco de dados.`
+        `Registro enviado automaticamente ao banco de dados permanente.`
       );
     }
   };
@@ -206,12 +216,13 @@ export default function App() {
     if (selectedComponent?.id === id) {
       setSelectedComponent(null);
     }
+    showSaveToast(`Peça removida do banco de dados com sucesso.`);
     if (currentUser && comp) {
       storageService.addLog(
         currentUser.username,
         currentUser.role,
         `Exclusão de Peça: ${comp.tagCode}`,
-        `Componente removido do catálogo.`
+        `Componente removido do catálogo e banco de dados permanente.`
       );
     }
   };
@@ -221,12 +232,13 @@ export default function App() {
     refreshComponents();
     setIsMachineFormOpen(false);
     setEditingMachine(null);
+    showSaveToast(`Máquina "${machine.name}" (${machine.tagCode}) salva automaticamente no banco de dados!`);
     if (currentUser) {
       storageService.addLog(
         currentUser.username,
         currentUser.role,
         `Cadastro/Edição de Máquina: ${machine.tagCode}`,
-        `Máquina ${machine.name} salva no cadastro de ativos.`
+        `Máquina ${machine.name} enviada automaticamente ao banco de dados permanente.`
       );
     }
   };
@@ -238,12 +250,13 @@ export default function App() {
     if (selectedMachine?.id === id) {
       setSelectedMachine(null);
     }
+    showSaveToast(`Máquina removida do banco de dados com sucesso.`);
     if (currentUser && maq) {
       storageService.addLog(
         currentUser.username,
         currentUser.role,
         `Exclusão de Máquina: ${maq.tagCode}`,
-        `Máquina ${maq.name} removida da planta.`
+        `Máquina ${maq.name} removida do banco de dados permanente.`
       );
     }
   };
@@ -355,6 +368,16 @@ export default function App() {
       {/* Offline Status Badge / Alert Bar */}
       <OfflineIndicator onOpenManager={() => setIsOfflineModalOpen(true)} />
 
+      {/* Real-time Toast Feedback Banner */}
+      {saveFeedback && (
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 max-w-md w-full px-4 animate-in fade-in slide-in-from-top-3 duration-200">
+          <div className="bg-slate-900 border border-emerald-500/60 text-white px-4 py-3 rounded-xl shadow-2xl backdrop-blur-md flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+            <span className="text-xs font-semibold leading-snug">{saveFeedback}</span>
+          </div>
+        </div>
+      )}
+
       {/* Main Workspace */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-6 space-y-6">
         
@@ -385,7 +408,7 @@ export default function App() {
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
                 {isCdi
-                  ? 'Acesso CDI (Público com Senha): Cadastre e vincule máquinas, defina permissões de peças e gerencie o banco de dados técnico. Seus itens permanecem salvos permanentemente.'
+                  ? 'Acesso CDI: Cadastre e vincule máquinas, defina permissões de peças e gerencie o banco de dados técnico. Seus itens permanecem salvos permanentemente.'
                   : currentUser.role === 'MECANICA'
                   ? 'Acesso Mecânico: Ao pesquisar máquinas na lupa ou navegar abaixo, você tem acesso às peças mecânicas pré-definidas (rolamentos, mancais, correia, rolos).'
                   : 'Acesso Elétrico: Ao pesquisar máquinas na lupa ou navegar abaixo, você tem acesso às peças elétricas e automação pré-definidas (motores, inversores, sensores).'}
@@ -393,7 +416,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
+          <div className="w-full lg:w-auto grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
             {isCdi && (
               <>
                 {/* Opção solicitada pelo usuário: CADASTRA MAQUINA */}
@@ -402,7 +425,7 @@ export default function App() {
                     setEditingMachine(null);
                     setIsMachineFormOpen(true);
                   }}
-                  className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg transition shadow-md shadow-amber-500/20 cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-amber-500 hover:bg-amber-400 active:scale-[0.98] text-slate-950 text-xs font-bold rounded-xl transition shadow-md shadow-amber-500/20 cursor-pointer"
                   title="Cadastrar nova máquina e vincular peças com permissões de perfil"
                 >
                   <Cog className="w-4 h-4 animate-spin-slow" />
@@ -414,10 +437,10 @@ export default function App() {
                     setEditingComponent(null);
                     setIsFormModalOpen(true);
                   }}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-[0.98] text-amber-300 hover:text-white text-xs font-bold rounded-xl border border-amber-500/30 transition cursor-pointer"
                 >
-                  <Plus className="w-4 h-4" />
-                  <span>Nova Peça / Componente</span>
+                  <Plus className="w-4 h-4 text-amber-400" />
+                  <span>Nova Peça</span>
                 </button>
               </>
             )}
@@ -589,7 +612,7 @@ export default function App() {
             </div>
 
             {/* Results Info */}
-            <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+            <div className="flex items-center justify-between text-xs text-slate-400 px-1 gap-2">
               <div className="flex items-center gap-2">
                 <span>Exibindo <strong className="text-slate-200 font-mono tabular-nums">{filteredComponents.length}</strong> de <strong className="text-slate-200 font-mono tabular-nums">{components.length}</strong> componentes</span>
                 {searchQuery && (
@@ -599,6 +622,20 @@ export default function App() {
                   </>
                 )}
               </div>
+
+              {isCdi && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingComponent(null);
+                    setIsFormModalOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1 bg-amber-500 hover:bg-amber-400 active:scale-[0.98] text-slate-950 font-bold text-xs rounded-lg transition shadow-sm cursor-pointer shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Cadastrar Peça</span>
+                </button>
+              )}
             </div>
 
             {/* Component Grid */}

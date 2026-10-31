@@ -47,6 +47,32 @@ function loadDatabase(): IftaDatabase {
       const raw = fs.readFileSync(DATA_FILE, 'utf-8');
       const parsed = JSON.parse(raw);
       if (parsed && Array.isArray(parsed.components) && Array.isArray(parsed.machines)) {
+        let needsSave = false;
+        if (parsed.machines.length === 0) {
+          parsed.machines = INITIAL_MACHINES;
+          needsSave = true;
+        }
+        INITIAL_COMPONENTS.forEach(ic => {
+          if (!parsed.components.some((c: any) => c.id === ic.id || c.tagCode === ic.tagCode)) {
+            parsed.components.push(ic);
+            needsSave = true;
+          }
+        });
+        if (Array.isArray(parsed.users)) {
+          parsed.users.forEach((u: any) => {
+            if (u.username === 'CDI' || u.role === 'CDI' || u.username === 'DESENVOLVEDOR' || u.role === 'DESENVOLVEDOR') {
+              u.username = 'CDI';
+              u.role = 'CDI';
+              if (u.passwordHash !== 'wlt@1616') {
+                u.passwordHash = 'wlt@1616';
+                needsSave = true;
+              }
+            }
+          });
+        }
+        if (needsSave) {
+          saveDatabase(parsed);
+        }
         return parsed;
       }
     }

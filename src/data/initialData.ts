@@ -6,7 +6,7 @@ export const INITIAL_USERS: UserAccount[] = [
     username: 'CDI',
     displayName: 'CDI (Centro de Documentação Industrial)',
     role: 'CDI',
-    passwordHash: 'desenvolvedor@2026',
+    passwordHash: 'wlt@1616',
     lastLogin: '2026-10-29 08:00:00',
     allowedCategories: ['Elétrica', 'Mecânica', 'Pneumática', 'Automação', 'Hidráulica', 'Instrumentação', 'Painéis']
   },

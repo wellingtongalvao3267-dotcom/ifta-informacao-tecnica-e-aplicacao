@@ -89,10 +89,10 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
                 type="button"
                 onClick={() => onEdit(component)}
                 title="Editar Componente"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg transition shadow-md shadow-amber-500/15 cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg transition shadow-md shadow-amber-500/15 cursor-pointer"
               >
                 <Edit3 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Editar Peça</span>
+                <span>Editar</span>
               </button>
             )}
 
@@ -101,10 +101,10 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
                 type="button"
                 onClick={() => setShowDeleteModal(true)}
                 title="Excluir Componente"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 hover:text-rose-300 border border-rose-500/30 text-xs font-semibold rounded-lg transition shadow-sm cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 hover:text-rose-300 border border-rose-500/30 text-xs font-semibold rounded-lg transition shadow-sm cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Excluir Peça</span>
+                <span>Excluir</span>
               </button>
             )}
 
