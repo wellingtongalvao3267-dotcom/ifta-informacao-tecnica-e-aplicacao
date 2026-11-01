@@ -50,6 +50,8 @@ export interface ComponentItem {
   qrCodeData: string;
   isRestricted?: boolean; // If restricted only to specific roles
   visibleToRoles: UserRole[]; // Which profiles can see this item
+  createdBy?: string; // Username / Role do criador para rastreabilidade
+  updatedBy?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -86,6 +88,8 @@ export interface MachineItem {
   qrCodeData: string;
   status?: 'OPERACIONAL' | 'MANUTENCAO' | 'ALERTA';
   linkedComponents: LinkedComponentRule[];
+  createdBy?: string; // Username / Role do criador para rastreabilidade
+  updatedBy?: string;
   createdAt: string;
   updatedAt: string;
 }

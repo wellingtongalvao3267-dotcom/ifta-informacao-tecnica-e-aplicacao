@@ -95,6 +95,16 @@ export default function App() {
     const handleSync = () => {
       if (currentUser) {
         refreshComponents();
+        setSelectedComponent(prev => {
+          if (!prev) return null;
+          const fresh = storageService.getComponents().find(c => c.id === prev.id || c.tagCode === prev.tagCode);
+          return fresh || prev;
+        });
+        setSelectedMachine(prev => {
+          if (!prev) return null;
+          const fresh = storageService.getMachines().find(m => m.id === prev.id || m.tagCode === prev.tagCode);
+          return fresh || prev;
+        });
       }
     };
     const handleStatus = (e: any) => {
@@ -209,70 +219,82 @@ export default function App() {
     }
   };
 
-  const handleSaveComponent = (item: ComponentItem) => {
-    storageService.saveComponent(item);
-    refreshComponents();
+  const handleSaveComponent = async (item: ComponentItem) => {
     setIsFormModalOpen(false);
     setEditingComponent(null);
-    showSaveToast(`Peça "${item.name}" (${item.tagCode}) salva automaticamente no banco de dados!`);
-    if (currentUser) {
-      storageService.addLog(
-        currentUser.username,
-        currentUser.role,
-        `Edição/Cadastro de Peça: ${item.tagCode}`,
-        `Registro enviado automaticamente ao banco de dados permanente.`
-      );
+    showSaveToast(`Salvando "${item.name}" no banco de dados compartilhado...`);
+    try {
+      const saved = await storageService.saveComponent(item);
+      refreshComponents();
+      showSaveToast(`✅ Peça "${saved.name}" (${saved.tagCode}) salva e compartilhada com todos os usuários!`);
+      if (currentUser) {
+        storageService.addLog(
+          currentUser.username,
+          currentUser.role,
+          `Edição/Cadastro de Peça: ${item.tagCode}`,
+          `Registro compartilhado no banco de dados da fábrica.`
+        );
+      }
+    } catch {
+      refreshComponents();
     }
   };
 
-  const handleDeleteComponent = (id: string) => {
+  const handleDeleteComponent = async (id: string) => {
     const comp = components.find(c => c.id === id);
-    storageService.deleteComponent(id);
-    refreshComponents();
     if (selectedComponent?.id === id) {
       setSelectedComponent(null);
     }
-    showSaveToast(`Peça removida do banco de dados com sucesso.`);
+    showSaveToast(`Removendo peça do banco de dados...`);
+    await storageService.deleteComponent(id);
+    refreshComponents();
+    showSaveToast(`✅ Peça removida do banco de dados em todos os dispositivos.`);
     if (currentUser && comp) {
       storageService.addLog(
         currentUser.username,
         currentUser.role,
         `Exclusão de Peça: ${comp.tagCode}`,
-        `Componente removido do catálogo e banco de dados permanente.`
+        `Componente removido do catálogo compartilhado.`
       );
     }
   };
 
-  const handleSaveMachine = (machine: MachineItem) => {
-    storageService.saveMachine(machine);
-    refreshComponents();
+  const handleSaveMachine = async (machine: MachineItem) => {
     setIsMachineFormOpen(false);
     setEditingMachine(null);
-    showSaveToast(`Máquina "${machine.name}" (${machine.tagCode}) salva automaticamente no banco de dados!`);
-    if (currentUser) {
-      storageService.addLog(
-        currentUser.username,
-        currentUser.role,
-        `Cadastro/Edição de Máquina: ${machine.tagCode}`,
-        `Máquina ${machine.name} enviada automaticamente ao banco de dados permanente.`
-      );
+    showSaveToast(`Salvando máquina "${machine.name}" no banco de dados compartilhado...`);
+    try {
+      const saved = await storageService.saveMachine(machine);
+      refreshComponents();
+      showSaveToast(`✅ Máquina "${saved.name}" (${saved.tagCode}) salva e compartilhada com todos os usuários!`);
+      if (currentUser) {
+        storageService.addLog(
+          currentUser.username,
+          currentUser.role,
+          `Cadastro/Edição de Máquina: ${machine.tagCode}`,
+          `Máquina ${machine.name} compartilhada no banco de dados da fábrica.`
+        );
+      }
+    } catch {
+      refreshComponents();
     }
   };
 
-  const handleDeleteMachine = (id: string) => {
+  const handleDeleteMachine = async (id: string) => {
     const maq = machines.find(m => m.id === id);
-    storageService.deleteMachine(id);
-    refreshComponents();
     if (selectedMachine?.id === id) {
       setSelectedMachine(null);
     }
-    showSaveToast(`Máquina removida do banco de dados com sucesso.`);
+    showSaveToast(`Removendo máquina do banco de dados...`);
+    await storageService.deleteMachine(id);
+    refreshComponents();
+    showSaveToast(`✅ Máquina removida do banco de dados em todos os dispositivos.`);
     if (currentUser && maq) {
       storageService.addLog(
         currentUser.username,
         currentUser.role,
         `Exclusão de Máquina: ${maq.tagCode}`,
-        `Máquina ${maq.name} removida do banco de dados permanente.`
+        `Máquina ${maq.name} removida do banco de dados compartilhado.`
       );
     }
   };

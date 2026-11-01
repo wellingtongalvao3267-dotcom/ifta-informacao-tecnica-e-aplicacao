@@ -255,6 +255,12 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
                         {component.maintenanceIntervalHours ? `${component.maintenanceIntervalHours} horas` : 'Sob demanda'}
                       </span>
                     </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px] uppercase">Rastreabilidade</span>
+                      <span className="text-slate-200 font-semibold">
+                        {component.createdBy ? `Cadastrado por ${component.createdBy}` : 'Catálogo Padrão'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -230,6 +230,8 @@ export const MachineFormModal: React.FC<MachineFormModalProps> = ({
       qrCodeData: `IFTA:${cleanTag}`,
       status: formData.status || 'OPERACIONAL',
       linkedComponents: formData.linkedComponents || [],
+      createdBy: initialMachine?.createdBy || storageService.getCurrentUser()?.username || 'CDI',
+      updatedBy: storageService.getCurrentUser()?.username || 'CDI',
       createdAt: initialMachine?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };

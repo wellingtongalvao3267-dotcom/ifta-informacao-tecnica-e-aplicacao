@@ -222,8 +222,9 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
                   {machine.sector}
                 </p>
               </div>
-              <div className="mt-3 pt-2 border-t border-slate-900 text-[10px] text-slate-500 font-mono">
-                Status: {machine.status || 'OPERACIONAL'}
+              <div className="mt-3 pt-2 border-t border-slate-900 text-[10px] text-slate-500 font-mono flex items-center justify-between">
+                <span>Status: {machine.status || 'OPERACIONAL'}</span>
+                <span>{machine.createdBy ? `Criado por ${machine.createdBy}` : 'Catálogo Padrão'}</span>
               </div>
             </div>
 

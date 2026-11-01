@@ -1,6 +1,56 @@
 {
   "components": [
     {
+      "id": "comp-audit-1793537769",
+      "tagCode": "MOT-AUDIT-01",
+      "name": "Motor Redutor Auditoria SEW",
+      "category": "Mecânica",
+      "manufacturer": "SEW Eurodrive",
+      "model": "KAF77 DRE100LC4",
+      "application": "Linha 01 - Elevador Principal",
+      "description": "Motor de alta eficiência com inversor WEG integrado e parametrização salva.",
+      "imageUrl": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80",
+      "specs": [
+        {
+          "label": "Potência",
+          "value": "3.0 kW"
+        },
+        {
+          "label": "Rotação",
+          "value": "1720 RPM"
+        },
+        {
+          "label": "Inversor",
+          "value": "CFW11 7.5A"
+        }
+      ],
+      "maintenanceGuide": [
+        {
+          "step": 1,
+          "title": "Nível de Óleo",
+          "instruction": "Verificar visor",
+          "torqueOrMeasure": "Visual"
+        }
+      ],
+      "commonFailures": [
+        {
+          "symptom": "Aquecimento",
+          "probableCause": "Sobrecarga",
+          "correctiveAction": "Checar corrente"
+        }
+      ],
+      "visibleToRoles": [
+        "CDI",
+        "MECANICA",
+        "ELETRICA"
+      ],
+      "createdBy": "CDI",
+      "updatedBy": "ELETRICA",
+      "qrCodeData": "IFTA:MOT-AUDIT-01",
+      "updatedAt": "2026-11-01T12:56:09.635Z",
+      "createdAt": "2026-11-01T12:56:09.618Z"
+    },
+    {
       "id": "comp-test-realtime-1",
       "tagCode": "TEST-RT-01",
       "name": "Peça Teste Realtime",
@@ -921,6 +971,30 @@
   ],
   "machines": [
     {
+      "id": "maq-audit-1793537769",
+      "tagCode": "MAQ-AUDIT-01",
+      "name": "Prensa Hidráulica Contínua",
+      "sector": "Setor de Prensagem / Linha 03",
+      "dimensions": "4.200mm x 1.800mm x 3.100mm",
+      "description": "Equipamento principal de prensagem com acionamento servo-assistido.",
+      "status": "OPERACIONAL",
+      "linkedComponents": [
+        {
+          "componentId": "comp-audit-1793537769",
+          "allowedRoles": [
+            "CDI",
+            "MECANICA"
+          ],
+          "positionOrFunction": "Acionamento hidráulico"
+        }
+      ],
+      "createdBy": "CDI",
+      "updatedBy": "CDI",
+      "qrCodeData": "IFTA:MAQ-AUDIT-01",
+      "updatedAt": "2026-11-01T12:56:09.630Z",
+      "createdAt": "2026-11-01T12:56:09.630Z"
+    },
+    {
       "id": "maq-001",
       "tagCode": "MAQ-EST-01",
       "name": "Esteira Transportadora 01",
@@ -1176,5 +1250,5 @@
     }
   ],
   "version": "2026.3",
-  "lastUpdated": "2026-10-31T19:39:42.630Z"
+  "lastUpdated": "2026-11-01T12:56:09.635Z"
 }

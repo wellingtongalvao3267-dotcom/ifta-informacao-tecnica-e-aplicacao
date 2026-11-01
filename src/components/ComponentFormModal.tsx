@@ -187,6 +187,8 @@ export const ComponentFormModal: React.FC<ComponentFormModalProps> = ({
       manualSummary: manualSummary.trim(),
       qrCodeData: `IFTA:${cleanTag}`,
       visibleToRoles: Array.from(new Set([...visibleToRoles, 'CDI'])) as UserRole[],
+      createdBy: initialComponent?.createdBy || storageService.getCurrentUser()?.username || 'CDI',
+      updatedBy: storageService.getCurrentUser()?.username || 'CDI',
       createdAt: initialComponent?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
