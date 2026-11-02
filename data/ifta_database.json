@@ -1,6 +1,34 @@
 {
   "components": [
     {
+      "id": "comp-elet-1793663816",
+      "tagCode": "INV-AUDIT-02",
+      "name": "Inversor de Frequencia WEG CFW500",
+      "category": "Eletrica",
+      "manufacturer": "WEG",
+      "model": "CFW500-15A",
+      "application": "Esteira de Transporte 01",
+      "description": "Inversor com controle vetorial sensorless para acionamento de esteira.",
+      "imageUrl": "",
+      "specs": [
+        {
+          "label": "Corrente",
+          "value": "15 A"
+        }
+      ],
+      "maintenanceGuide": [],
+      "commonFailures": [],
+      "visibleToRoles": [
+        "CDI",
+        "MECANICA",
+        "ELETRICA"
+      ],
+      "createdBy": "CDI",
+      "qrCodeData": "IFTA:INV-AUDIT-02",
+      "updatedAt": "2026-11-02T23:56:56.093Z",
+      "createdAt": "2026-11-02T23:56:56.093Z"
+    },
+    {
       "id": "comp-audit-1793537769",
       "tagCode": "MOT-AUDIT-01",
       "name": "Motor Redutor Auditoria SEW",
@@ -1110,49 +1138,56 @@
       "category": "Elétrica",
       "allowedRoles": [
         "CDI",
-        "ELETRICA"
+        "ELETRICA",
+        "MECANICA"
       ]
     },
     {
       "category": "Mecânica",
       "allowedRoles": [
         "CDI",
-        "MECANICA"
+        "MECANICA",
+        "ELETRICA"
       ]
     },
     {
       "category": "Pneumática",
       "allowedRoles": [
         "CDI",
-        "MECANICA"
+        "MECANICA",
+        "ELETRICA"
       ]
     },
     {
       "category": "Automação",
       "allowedRoles": [
         "CDI",
-        "ELETRICA"
+        "ELETRICA",
+        "MECANICA"
       ]
     },
     {
       "category": "Hidráulica",
       "allowedRoles": [
         "CDI",
-        "MECANICA"
+        "MECANICA",
+        "ELETRICA"
       ]
     },
     {
       "category": "Instrumentação",
       "allowedRoles": [
         "CDI",
-        "ELETRICA"
+        "ELETRICA",
+        "MECANICA"
       ]
     },
     {
       "category": "Painéis",
       "allowedRoles": [
         "CDI",
-        "ELETRICA"
+        "ELETRICA",
+        "MECANICA"
       ]
     }
   ],
@@ -1250,5 +1285,5 @@
     }
   ],
   "version": "2026.3",
-  "lastUpdated": "2026-11-01T12:56:09.635Z"
+  "lastUpdated": "2026-11-02T23:56:56.093Z"
 }

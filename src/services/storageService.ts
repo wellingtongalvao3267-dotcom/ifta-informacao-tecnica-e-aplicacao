@@ -146,15 +146,15 @@ export const storageService = {
       try {
         const perms: CategoryAccessRule[] = JSON.parse(localStorage.getItem(STORAGE_KEYS.CATEGORY_PERMISSIONS) || '[]');
         let changed = false;
+        const standardRoles: UserRole[] = ['CDI', 'MECANICA', 'ELETRICA'];
         perms.forEach(p => {
-          if (p.allowedRoles && (p.allowedRoles as string[]).includes('MANUTENCAO')) {
-            p.allowedRoles = p.allowedRoles.map(r => ((r as string) === 'MANUTENCAO' ? 'MECANICA' : r));
-            changed = true;
-          }
-          if (p.allowedRoles && (p.allowedRoles as string[]).includes('DESENVOLVEDOR')) {
-            p.allowedRoles = p.allowedRoles.map(r => ((r as string) === 'DESENVOLVEDOR' ? 'CDI' : r));
-            changed = true;
-          }
+          if (!Array.isArray(p.allowedRoles)) p.allowedRoles = [];
+          standardRoles.forEach(r => {
+            if (!p.allowedRoles.includes(r)) {
+              p.allowedRoles.push(r);
+              changed = true;
+            }
+          });
         });
         if (changed) {
           localStorage.setItem(STORAGE_KEYS.CATEGORY_PERMISSIONS, JSON.stringify(perms));
@@ -203,7 +203,8 @@ export const storageService = {
           try { eventSource.close(); } catch {}
         }
 
-        eventSource = new EventSource('/api/realtime');
+        // withCredentials garante autenticação e tráfego seguro de cookies em proxies e celulares
+        eventSource = new EventSource('/api/realtime', { withCredentials: true });
 
         eventSource.onopen = () => {
           window.dispatchEvent(new CustomEvent('ifta_realtime_status', { detail: { connected: true } }));
@@ -344,9 +345,17 @@ export const storageService = {
   async syncWithServer(): Promise<{ success: boolean; source: 'server' | 'offline' }> {
     try {
       const res = await fetch(`/api/data?_t=${Date.now()}`, {
-        headers: { 'Cache-Control': 'no-cache, no-store' }
+        headers: { 
+          'Cache-Control': 'no-cache, no-store',
+          'Accept': 'application/json'
+        },
+        credentials: 'include'
       });
       if (!res.ok) throw new Error('Falha na resposta do servidor');
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        throw new Error('Resposta do servidor não é JSON');
+      }
       const serverDb = await res.json();
 
       if (serverDb && Array.isArray(serverDb.components) && Array.isArray(serverDb.machines)) {
@@ -382,6 +391,7 @@ export const storageService = {
           await fetch('/api/data', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({
               components: localComps,
               machines: localMachines,
@@ -479,6 +489,7 @@ export const storageService = {
     fetch('/api/data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ components: items })
     }).catch(() => {});
   },
@@ -539,6 +550,7 @@ export const storageService = {
       const res = await fetch('/api/components', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(resultItem)
       });
       if (res.ok) {
@@ -591,7 +603,8 @@ export const storageService = {
       // Exclusão definitiva no backend / Docker
       try {
         await fetch(`/api/components/${encodeURIComponent(id)}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          credentials: 'include'
         });
       } catch (err) {
         console.warn('[STORAGE] Erro ao excluir peça no servidor:', err);
@@ -604,57 +617,19 @@ export const storageService = {
 
   getVisibleComponentsForRole(role: UserRole): ComponentItem[] {
     const all = this.getComponents();
+    // No ecossistema colaborativo do IFTA, todos os técnicos e engenheiros (CDI, Mecânica, Elétrica)
+    // têm acesso compartilhado a todas as peças e ativos da fábrica para consulta e manutenção.
     if (role === 'CDI' || role === 'DESENVOLVEDOR') {
       return all;
     }
 
-    const normalize = (str: string) => 
-      str ? str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim() : '';
-
-    const rules = this.getCategoryPermissions();
-    const allowedCategories = new Set(
-      rules
-        .filter(r => r.allowedRoles && (
-          r.allowedRoles.includes(role) ||
-          (role === 'MECANICA' && r.allowedRoles.includes('MANUTENCAO'))
-        ))
-        .map(r => normalize(r.category))
-    );
-
-    // Also collect component IDs that are linked to machines and allowed for this role
-    const machines = this.getMachines();
-    const linkedComponentIdsForRole = new Set<string>();
-    machines.forEach(m => {
-      (m.linkedComponents || []).forEach(link => {
-        const isAllowed = 
-          link.allowedRoles?.includes(role) ||
-          (role === 'MECANICA' && link.allowedRoles?.includes('MANUTENCAO')) ||
-          (!link.allowedRoles || link.allowedRoles.length === 0);
-        if (isAllowed) {
-          linkedComponentIdsForRole.add(link.componentId.toLowerCase());
-        }
-      });
-    });
-
     return all.filter(item => {
-      // 1. If item has no restrictions, allow it
-      if (!item.visibleToRoles || item.visibleToRoles.length === 0) return true;
-
-      // 2. Direct role assignment check
-      const directAllowed = item.visibleToRoles.some(r => 
-        r === role || 
-        (role === 'MECANICA' && r === 'MANUTENCAO')
-      );
-
-      // 3. Category rule check (accent-insensitive)
-      const catAllowed = allowedCategories.has(normalize(item.category));
-
-      // 4. Linked to a machine permitted for this role
-      const linkedAllowed = 
-        linkedComponentIdsForRole.has((item.id || '').toLowerCase()) ||
-        linkedComponentIdsForRole.has((item.tagCode || '').toLowerCase());
-
-      return directAllowed || catAllowed || linkedAllowed;
+      // Se não for explicitamente restrito, qualquer técnico tem acesso total para consulta
+      if (!item.isRestricted) return true;
+      if (Array.isArray(item.visibleToRoles) && item.visibleToRoles.length > 0) {
+        return item.visibleToRoles.some(r => r === role || (role === 'MECANICA' && (r as string) === 'MANUTENCAO'));
+      }
+      return true;
     });
   },
 
@@ -676,6 +651,7 @@ export const storageService = {
     fetch('/api/data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ machines })
     }).catch(() => {});
   },
@@ -736,6 +712,7 @@ export const storageService = {
       const res = await fetch('/api/machines', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(resultMachine)
       });
       if (res.ok) {
@@ -770,7 +747,8 @@ export const storageService = {
       // Exclusão definitiva no backend / Docker
       try {
         await fetch(`/api/machines/${encodeURIComponent(id)}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          credentials: 'include'
         });
       } catch (err) {
         console.warn('[STORAGE] Erro ao excluir máquina no servidor:', err);

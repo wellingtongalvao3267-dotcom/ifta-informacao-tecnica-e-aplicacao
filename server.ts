@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { INITIAL_USERS, INITIAL_COMPONENTS, INITIAL_CATEGORY_PERMISSIONS, INITIAL_LOGS, INITIAL_MACHINES } from './src/data/initialData';
-import { ComponentItem, MachineItem, UserAccount, CategoryAccessRule, AccessLog } from './src/types';
+import { ComponentItem, MachineItem, UserAccount, CategoryAccessRule, AccessLog, UserRole } from './src/types';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -87,6 +87,18 @@ function loadDatabase(): IftaDatabase {
             }
           });
         }
+        if (Array.isArray(parsed.categoryPermissions)) {
+          const standardRoles: UserRole[] = ['CDI', 'MECANICA', 'ELETRICA'];
+          parsed.categoryPermissions.forEach((p: any) => {
+            if (!Array.isArray(p.allowedRoles)) p.allowedRoles = [];
+            standardRoles.forEach(r => {
+              if (!p.allowedRoles.includes(r)) {
+                p.allowedRoles.push(r);
+                needsSave = true;
+              }
+            });
+          });
+        }
         if (needsSave) {
           saveDatabase(parsed);
         }
@@ -116,12 +128,19 @@ const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Anti-cache middleware for all API routes - prevents mobile browsers/proxies from serving stale data
+// Anti-cache and CORS middleware for all API routes
 app.use('/api', (req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
   res.setHeader('Surrogate-Control', 'no-store');
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Cache-Control, Pragma');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
   next();
 });
 

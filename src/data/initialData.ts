@@ -17,7 +17,7 @@ export const INITIAL_USERS: UserAccount[] = [
     role: 'MECANICA',
     passwordHash: 'bello2026',
     lastLogin: '2026-10-27 08:30:00',
-    allowedCategories: ['Mecânica', 'Pneumática', 'Hidráulica']
+    allowedCategories: ['Elétrica', 'Mecânica', 'Pneumática', 'Automação', 'Hidráulica', 'Instrumentação', 'Painéis']
   },
   {
     id: 'user-elet-01',
@@ -26,7 +26,7 @@ export const INITIAL_USERS: UserAccount[] = [
     role: 'ELETRICA',
     passwordHash: 'bello0099',
     lastLogin: '2026-10-27 08:15:22',
-    allowedCategories: ['Elétrica', 'Automação', 'Instrumentação', 'Painéis']
+    allowedCategories: ['Elétrica', 'Mecânica', 'Pneumática', 'Automação', 'Hidráulica', 'Instrumentação', 'Painéis']
   }
 ];
 
@@ -43,31 +43,31 @@ export const INITIAL_CATEGORIES = [
 export const INITIAL_CATEGORY_PERMISSIONS: CategoryAccessRule[] = [
   {
     category: 'Elétrica',
-    allowedRoles: ['CDI', 'ELETRICA']
+    allowedRoles: ['CDI', 'MECANICA', 'ELETRICA']
   },
   {
     category: 'Mecânica',
-    allowedRoles: ['CDI', 'MECANICA']
+    allowedRoles: ['CDI', 'MECANICA', 'ELETRICA']
   },
   {
     category: 'Pneumática',
-    allowedRoles: ['CDI', 'MECANICA']
+    allowedRoles: ['CDI', 'MECANICA', 'ELETRICA']
   },
   {
     category: 'Automação',
-    allowedRoles: ['CDI', 'ELETRICA']
+    allowedRoles: ['CDI', 'MECANICA', 'ELETRICA']
   },
   {
     category: 'Hidráulica',
-    allowedRoles: ['CDI', 'MECANICA']
+    allowedRoles: ['CDI', 'MECANICA', 'ELETRICA']
   },
   {
     category: 'Instrumentação',
-    allowedRoles: ['CDI', 'ELETRICA']
+    allowedRoles: ['CDI', 'MECANICA', 'ELETRICA']
   },
   {
     category: 'Painéis',
-    allowedRoles: ['CDI', 'ELETRICA']
+    allowedRoles: ['CDI', 'MECANICA', 'ELETRICA']
   }
 ];
 
