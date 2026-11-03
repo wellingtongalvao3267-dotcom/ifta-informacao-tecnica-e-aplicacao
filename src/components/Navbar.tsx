@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, QrCode, LogOut, Settings, X, Shield, Wrench, Zap, UserCheck, Edit2, HardDrive, RefreshCw, ArrowLeft } from 'lucide-react';
+import { Search, QrCode, LogOut, Settings, X, Shield, Wrench, Zap, UserCheck, Edit2, HardDrive, RefreshCw } from 'lucide-react';
 import { UserAccount } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -121,22 +121,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Linha 2 (Segunda Linha): Botão 'Voltar' e ao lado dele os botões selecionados */}
+        {/* Linha 2 (Segunda Linha): Botões de ação e gerenciamento */}
         <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-800/60 overflow-x-auto">
           <div className="flex items-center gap-2 shrink-0">
-            {/* Botão de Voltar */}
-            {onBack && (
-              <button
-                type="button"
-                onClick={onBack}
-                title="Voltar para a tela anterior"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 active:scale-95 border border-slate-700 hover:border-amber-500/60 text-slate-200 hover:text-white text-xs font-bold transition shadow-sm cursor-pointer group shrink-0"
-              >
-                <ArrowLeft className="w-3.5 h-3.5 text-amber-400 group-hover:-translate-x-0.5 transition-transform" />
-                <span>Voltar</span>
-              </button>
-            )}
-
             {/* Botão de Acesso Offline & Download de Informações (selecionado) */}
             {onOpenOfflineManager && (
               <button
@@ -146,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 active:scale-[0.97] rounded-lg border border-slate-700 transition whitespace-nowrap cursor-pointer shrink-0"
               >
                 <HardDrive className="w-3.5 h-3.5 text-amber-400" />
-                <span>Offline & Backup</span>
+                <span>Offline</span>
               </button>
             )}
 
