@@ -14,7 +14,8 @@ import {
   ZoomIn,
   Copy,
   Check,
-  AlertTriangle
+  AlertTriangle,
+  ArrowLeft
 } from 'lucide-react';
 import { ComponentItem, UserRole } from '../types';
 import { TechnicalItemImage } from './TechnicalItemImage';
@@ -65,6 +66,15 @@ export const ComponentDetailModal: React.FC<ComponentDetailModalProps> = ({
         {/* Modal Top Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90 shrink-0">
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              title="Voltar ao catálogo"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 hover:border-amber-500/50 text-slate-200 hover:text-white text-xs font-bold transition shadow-sm cursor-pointer group"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-amber-400 group-hover:-translate-x-0.5 transition-transform" />
+              <span>Voltar</span>
+            </button>
             <span className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded font-mono text-xs font-bold text-amber-300">
               {component.tagCode}
             </span>

@@ -15,7 +15,8 @@ import {
   CheckCircle2, 
   AlertTriangle,
   Info,
-  ChevronRight
+  ChevronRight,
+  ArrowLeft
 } from 'lucide-react';
 import { MachineItem, ComponentItem, UserRole } from '../types';
 import { TechnicalItemImage } from './TechnicalItemImage';
@@ -93,6 +94,15 @@ export const MachineDetailModal: React.FC<MachineDetailModalProps> = ({
         {/* Modal Header */}
         <div className="p-5 border-b border-slate-800 bg-slate-900/90 flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              title="Voltar ao catálogo"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 hover:border-amber-500/50 text-slate-200 hover:text-white text-xs font-bold transition shadow-sm cursor-pointer group mt-0.5"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-amber-400 group-hover:-translate-x-0.5 transition-transform" />
+              <span>Voltar</span>
+            </button>
             <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 shrink-0">
               <Cog className="w-6 h-6 animate-spin-slow" />
             </div>

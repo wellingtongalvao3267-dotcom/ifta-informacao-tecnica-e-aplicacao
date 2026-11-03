@@ -163,6 +163,61 @@ export default function App() {
     setCurrentUser(null);
   };
 
+  const handleGoBack = () => {
+    // 1. Fecha modais ou detalhes abertos
+    if (selectedComponent) {
+      setSelectedComponent(null);
+      return;
+    }
+    if (selectedMachine) {
+      setSelectedMachine(null);
+      return;
+    }
+    if (isQrScannerOpen) {
+      setIsQrScannerOpen(false);
+      return;
+    }
+    if (isAdminPanelOpen) {
+      setIsAdminPanelOpen(false);
+      return;
+    }
+    if (isEditProfileOpen) {
+      setIsEditProfileOpen(false);
+      return;
+    }
+    if (isOfflineModalOpen) {
+      setIsOfflineModalOpen(false);
+      return;
+    }
+    if (isFormModalOpen) {
+      setIsFormModalOpen(false);
+      setEditingComponent(null);
+      return;
+    }
+    if (isMachineFormOpen) {
+      setIsMachineFormOpen(false);
+      setEditingMachine(null);
+      return;
+    }
+    // 2. Limpa busca se estiver ativa
+    if (searchQuery.trim() !== '') {
+      setSearchQuery('');
+      return;
+    }
+    // 3. Reseta categoria para TODAS
+    if (selectedCategory !== 'TODAS') {
+      setSelectedCategory('TODAS');
+      return;
+    }
+    // 4. Reseta filtro de visão de máquinas / peças
+    if (activeViewSection !== 'all') {
+      setActiveViewSection('all');
+      return;
+    }
+    // 5. Retorna à tela de apresentação / escolha de perfil
+    setShowSplash(true);
+  };
+
   const handleSelectComponent = (comp: ComponentItem, initialTab: 'specs' | 'diagram' | 'maintenance' | 'failures' | 'manual' | 'qr' = 'specs') => {
     setSelectedComponent(comp);
     setDetailInitialTab(initialTab);
@@ -426,6 +481,7 @@ export default function App() {
         isRealtimeConnected={isRealtimeConnected}
         onManualSync={handleManualSync}
         isSyncing={isSyncing}
+        onBack={handleGoBack}
       />
 
       {/* Offline Status Badge / Alert Bar */}
