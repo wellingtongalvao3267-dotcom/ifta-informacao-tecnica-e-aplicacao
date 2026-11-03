@@ -662,6 +662,7 @@ export const storageService = {
 
   async deleteComponent(id: string): Promise<boolean> {
     const items = this.getComponents();
+    this.removePendingSyncComponent(id);
     const filtered = items.filter(i => i.id !== id && i.tagCode !== id);
     if (filtered.length !== items.length) {
       localStorage.setItem(STORAGE_KEYS.COMPONENTS, JSON.stringify(filtered));
@@ -856,6 +857,7 @@ export const storageService = {
 
   async deleteMachine(id: string): Promise<boolean> {
     const machines = this.getMachines();
+    this.removePendingSyncMachine(id);
     const filtered = machines.filter(m => m.id !== id && m.tagCode !== id);
     if (filtered.length !== machines.length) {
       localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(filtered));
