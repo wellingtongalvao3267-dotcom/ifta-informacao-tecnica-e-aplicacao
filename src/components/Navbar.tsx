@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, QrCode, LogOut, Settings, X, Shield, Wrench, Zap, UserCheck, Edit2, HardDrive } from 'lucide-react';
+import { Search, QrCode, LogOut, Settings, X, Shield, Wrench, Zap, UserCheck, Edit2, HardDrive, RefreshCw } from 'lucide-react';
 import { UserAccount } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -14,6 +14,8 @@ interface NavbarProps {
   onLogout: () => void;
   isAdminOpen?: boolean;
   isRealtimeConnected?: boolean;
+  onManualSync?: () => void;
+  isSyncing?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -26,7 +28,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenOfflineManager,
   onLogout,
   isAdminOpen,
-  isRealtimeConnected = true
+  isRealtimeConnected = true,
+  onManualSync,
+  isSyncing = false
 }) => {
   const getRoleIcon = () => {
     switch (currentUser.role) {
@@ -91,14 +95,21 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Right Actions: QR Code Scanner + Developer Tools + User Profile */}
         <div className="flex items-center gap-2 shrink-0">
           
-          {/* Indicador de Sincronização em Tempo Real com o Banco */}
-          <div 
-            className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono text-slate-300"
-            title={isRealtimeConnected ? "Tempo Real Ativo: Máquinas e peças cadastradas pelo CDI chegam instantaneamente a todos os usuários." : "Reconectando canal em tempo real..."}
-          >
-            <span className={`w-2 h-2 rounded-full ${isRealtimeConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-            <span className="hidden xl:inline">{isRealtimeConnected ? 'Tempo Real Ativo' : 'Reconectando...'}</span>
-          </div>
+          {/* Botão de Sincronização em Tempo Real com o Banco Docker */}
+          {onManualSync && (
+            <button
+              type="button"
+              onClick={onManualSync}
+              disabled={isSyncing}
+              title={isRealtimeConnected ? "Sincronizar com o banco central. Canal em tempo real ativo." : "Canal offline/reconectando. Clique para sincronizar agora."}
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-slate-700 text-xs text-slate-300 active:scale-[0.97] transition cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-amber-400' : isRealtimeConnected ? 'text-emerald-400' : 'text-amber-400'}`} />
+              <span className="hidden sm:inline font-mono text-[11px]">
+                {isSyncing ? 'Sincronizando...' : isRealtimeConnected ? 'Banco Ativo' : 'Sincronizar'}
+              </span>
+            </button>
+          )}
 
           {/* Canto superior direito: Opção para escanear QR Code */}
           <button

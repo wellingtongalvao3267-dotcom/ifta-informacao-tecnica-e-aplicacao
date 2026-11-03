@@ -8,7 +8,9 @@ const STORAGE_KEYS = {
   CATEGORY_PERMISSIONS: 'ifta_cat_perms_v2',
   LOGS: 'ifta_access_logs_v2',
   CURRENT_USER: 'ifta_active_session_v2',
-  HAS_SEEN_SPLASH: 'ifta_seen_splash_v2'
+  HAS_SEEN_SPLASH: 'ifta_seen_splash_v2',
+  PENDING_COMPONENTS: 'ifta_pending_comps_v3',
+  PENDING_MACHINES: 'ifta_pending_maqs_v3'
 };
 
 export const storageService = {
@@ -140,27 +142,8 @@ export const storageService = {
       } catch {}
     }
 
-    if (!localStorage.getItem(STORAGE_KEYS.CATEGORY_PERMISSIONS)) {
-      localStorage.setItem(STORAGE_KEYS.CATEGORY_PERMISSIONS, JSON.stringify(INITIAL_CATEGORY_PERMISSIONS));
-    } else {
-      try {
-        const perms: CategoryAccessRule[] = JSON.parse(localStorage.getItem(STORAGE_KEYS.CATEGORY_PERMISSIONS) || '[]');
-        let changed = false;
-        const standardRoles: UserRole[] = ['CDI', 'MECANICA', 'ELETRICA'];
-        perms.forEach(p => {
-          if (!Array.isArray(p.allowedRoles)) p.allowedRoles = [];
-          standardRoles.forEach(r => {
-            if (!p.allowedRoles.includes(r)) {
-              p.allowedRoles.push(r);
-              changed = true;
-            }
-          });
-        });
-        if (changed) {
-          localStorage.setItem(STORAGE_KEYS.CATEGORY_PERMISSIONS, JSON.stringify(perms));
-        }
-      } catch {}
-    }
+    // Restaurar segregação estrita de categorias: Mecânica apenas itens mecânicos, Elétrica apenas itens elétricos, CDI total
+    localStorage.setItem(STORAGE_KEYS.CATEGORY_PERMISSIONS, JSON.stringify(INITIAL_CATEGORY_PERMISSIONS));
 
     if (!localStorage.getItem(STORAGE_KEYS.LOGS)) {
       localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(INITIAL_LOGS));
@@ -342,8 +325,97 @@ export const storageService = {
     }, 3000);
   },
 
+  getPendingSyncComponents(): ComponentItem[] {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.PENDING_COMPONENTS);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  addPendingSyncComponent(item: ComponentItem) {
+    const list = this.getPendingSyncComponents();
+    const idx = list.findIndex(c => c.id === item.id || c.tagCode.toUpperCase() === item.tagCode.toUpperCase());
+    if (idx >= 0) {
+      list[idx] = item;
+    } else {
+      list.push(item);
+    }
+    localStorage.setItem(STORAGE_KEYS.PENDING_COMPONENTS, JSON.stringify(list));
+  },
+
+  removePendingSyncComponent(idOrTag: string) {
+    const list = this.getPendingSyncComponents().filter(
+      c => c.id !== idOrTag && c.tagCode.toUpperCase() !== idOrTag.toUpperCase()
+    );
+    localStorage.setItem(STORAGE_KEYS.PENDING_COMPONENTS, JSON.stringify(list));
+  },
+
+  getPendingSyncMachines(): MachineItem[] {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.PENDING_MACHINES);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  addPendingSyncMachine(item: MachineItem) {
+    const list = this.getPendingSyncMachines();
+    const idx = list.findIndex(m => m.id === item.id || m.tagCode.toUpperCase() === item.tagCode.toUpperCase());
+    if (idx >= 0) {
+      list[idx] = item;
+    } else {
+      list.push(item);
+    }
+    localStorage.setItem(STORAGE_KEYS.PENDING_MACHINES, JSON.stringify(list));
+  },
+
+  removePendingSyncMachine(idOrTag: string) {
+    const list = this.getPendingSyncMachines().filter(
+      m => m.id !== idOrTag && m.tagCode.toUpperCase() !== idOrTag.toUpperCase()
+    );
+    localStorage.setItem(STORAGE_KEYS.PENDING_MACHINES, JSON.stringify(list));
+  },
+
   async syncWithServer(): Promise<{ success: boolean; source: 'server' | 'offline' }> {
     try {
+      // 1. Enviar primeiro quaisquer peças pendentes de sincronização
+      const pendingComps = this.getPendingSyncComponents();
+      for (const comp of pendingComps) {
+        try {
+          const pushRes = await fetch('/api/components', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(comp)
+          });
+          if (pushRes.ok) {
+            this.removePendingSyncComponent(comp.id);
+            this.removePendingSyncComponent(comp.tagCode);
+          }
+        } catch {}
+      }
+
+      // 2. Enviar máquinas pendentes de sincronização
+      const pendingMaqs = this.getPendingSyncMachines();
+      for (const maq of pendingMaqs) {
+        try {
+          const pushRes = await fetch('/api/machines', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(maq)
+          });
+          if (pushRes.ok) {
+            this.removePendingSyncMachine(maq.id);
+            this.removePendingSyncMachine(maq.tagCode);
+          }
+        } catch {}
+      }
+
+      // 3. Buscar snapshot mais recente do servidor
       const res = await fetch(`/api/data?_t=${Date.now()}`, {
         headers: { 
           'Cache-Control': 'no-cache, no-store',
@@ -363,41 +435,44 @@ export const storageService = {
         const localComps = this.getComponents();
         const localMachines = this.getMachines();
 
-        // Se o servidor possui dados salvos, atualiza o cache local
-        if (serverDb.components.length > 0 || serverDb.machines.length > 0) {
-          const localCompsStr = JSON.stringify(localComps);
-          const serverCompsStr = JSON.stringify(serverDb.components);
-          const localMachinesStr = JSON.stringify(localMachines);
-          const serverMachinesStr = JSON.stringify(serverDb.machines);
+        // 4. Reconciliação não-destrutiva: nunca apaga peças criadas localmente que ainda não foram salvas
+        const activePendingComps = this.getPendingSyncComponents();
+        const mergedComponents: ComponentItem[] = [...serverDb.components];
+        activePendingComps.forEach(pc => {
+          if (!mergedComponents.some(sc => sc.id === pc.id || sc.tagCode.toUpperCase() === pc.tagCode.toUpperCase())) {
+            mergedComponents.unshift(pc);
+          }
+        });
 
-          if (localCompsStr !== serverCompsStr) {
-            localStorage.setItem(STORAGE_KEYS.COMPONENTS, serverCompsStr);
+        const activePendingMaqs = this.getPendingSyncMachines();
+        const mergedMachines: MachineItem[] = [...serverDb.machines];
+        activePendingMaqs.forEach(pm => {
+          if (!mergedMachines.some(sm => sm.id === pm.id || sm.tagCode.toUpperCase() === pm.tagCode.toUpperCase())) {
+            mergedMachines.unshift(pm);
+          }
+        });
+
+        const localCompsStr = JSON.stringify(localComps);
+        const mergedCompsStr = JSON.stringify(mergedComponents);
+        if (localCompsStr !== mergedCompsStr) {
+          localStorage.setItem(STORAGE_KEYS.COMPONENTS, mergedCompsStr);
+          changed = true;
+        }
+
+        const localMaqsStr = JSON.stringify(localMachines);
+        const mergedMaqsStr = JSON.stringify(mergedMachines);
+        if (localMaqsStr !== mergedMaqsStr) {
+          localStorage.setItem(STORAGE_KEYS.MACHINES, mergedMaqsStr);
+          changed = true;
+        }
+
+        if (Array.isArray(serverDb.categoryPermissions)) {
+          const localPermsStr = JSON.stringify(this.getCategoryPermissions());
+          const serverPermsStr = JSON.stringify(serverDb.categoryPermissions);
+          if (localPermsStr !== serverPermsStr) {
+            localStorage.setItem(STORAGE_KEYS.CATEGORY_PERMISSIONS, serverPermsStr);
             changed = true;
           }
-          if (localMachinesStr !== serverMachinesStr) {
-            localStorage.setItem(STORAGE_KEYS.MACHINES, serverMachinesStr);
-            changed = true;
-          }
-          if (Array.isArray(serverDb.categoryPermissions)) {
-            const localPermsStr = JSON.stringify(this.getCategoryPermissions());
-            const serverPermsStr = JSON.stringify(serverDb.categoryPermissions);
-            if (localPermsStr !== serverPermsStr) {
-              localStorage.setItem(STORAGE_KEYS.CATEGORY_PERMISSIONS, serverPermsStr);
-              changed = true;
-            }
-          }
-        } else if (localComps.length > 0 || localMachines.length > 0) {
-          // Se o servidor estiver vazio, envia os dados locais para persistir no Docker
-          await fetch('/api/data', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-              components: localComps,
-              machines: localMachines,
-              categoryPermissions: this.getCategoryPermissions()
-            })
-          });
         }
 
         if (changed && typeof window !== 'undefined') {
@@ -406,7 +481,7 @@ export const storageService = {
         return { success: true, source: 'server' };
       }
     } catch {
-      // Fallback offline: dados continuam salvos no localStorage
+      // Fallback offline: dados continuam protegidos no localStorage e na fila pendente
     }
     return { success: false, source: 'offline' };
   },
@@ -473,12 +548,17 @@ export const storageService = {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.COMPONENTS);
       const items: ComponentItem[] = data ? JSON.parse(data) : INITIAL_COMPONENTS;
-      return items.map(c => ({
-        ...c,
-        visibleToRoles: Array.isArray(c.visibleToRoles) && c.visibleToRoles.length > 0 
-          ? c.visibleToRoles 
-          : ['CDI', 'MECANICA', 'ELETRICA']
-      }));
+      return items.map(c => {
+        if (!Array.isArray(c.visibleToRoles) || c.visibleToRoles.length === 0) {
+          const cat = (c.category || '').toLowerCase();
+          const isElec = ['elétrica', 'eletrica', 'automação', 'automacao', 'instrumentação', 'instrumentacao', 'painéis', 'paineis'].includes(cat);
+          return {
+            ...c,
+            visibleToRoles: isElec ? (['CDI', 'ELETRICA'] as UserRole[]) : (['CDI', 'MECANICA'] as UserRole[])
+          };
+        }
+        return c;
+      });
     } catch {
       return INITIAL_COMPONENTS;
     }
@@ -535,17 +615,18 @@ export const storageService = {
       const newItem = { 
         ...normalizedItem, 
         id: item.id || `comp-${Date.now()}`,
-        createdAt: now 
+        createdAt: item.createdAt || now 
       };
       items.unshift(newItem);
       resultItem = newItem;
     }
 
-    // Salva imediatamente no localStorage para exibição imediata no dispositivo
+    // Salva imediatamente em LocalStorage e adiciona à fila de sincronização pendente
     localStorage.setItem(STORAGE_KEYS.COMPONENTS, JSON.stringify(items));
+    this.addPendingSyncComponent(resultItem);
     window.dispatchEvent(new CustomEvent('ifta_data_synced'));
 
-    // Persistência direta e atômica no Docker / backend Express com broadcast imediato
+    // Persistência direta no servidor / Docker com broadcast em tempo real
     try {
       const res = await fetch('/api/components', {
         method: 'POST',
@@ -557,6 +638,10 @@ export const storageService = {
         const json = await res.json();
         if (json.component) {
           resultItem = json.component;
+          this.removePendingSyncComponent(resultItem.id);
+          this.removePendingSyncComponent(resultItem.tagCode);
+          (resultItem as any)._synced = true;
+
           const currentItems = this.getComponents();
           const targetIdx = currentItems.findIndex(c => c.id === resultItem.id || c.tagCode.toUpperCase() === resultItem.tagCode.toUpperCase());
           if (targetIdx >= 0) {
@@ -569,7 +654,7 @@ export const storageService = {
         }
       }
     } catch (err) {
-      console.warn('[STORAGE] Erro ao sincronizar peça com o servidor:', err);
+      console.warn('[STORAGE] Erro de rede ao sincronizar peça com o servidor (mantida na fila):', err);
     }
 
     return resultItem;
@@ -617,19 +702,46 @@ export const storageService = {
 
   getVisibleComponentsForRole(role: UserRole): ComponentItem[] {
     const all = this.getComponents();
-    // No ecossistema colaborativo do IFTA, todos os técnicos e engenheiros (CDI, Mecânica, Elétrica)
-    // têm acesso compartilhado a todas as peças e ativos da fábrica para consulta e manutenção.
+    // Perfil CDI e Desenvolvedor têm acesso irrestrito a todo o catálogo técnico (colaborativo)
     if (role === 'CDI' || role === 'DESENVOLVEDOR') {
       return all;
     }
 
+    const mechanicalCategories = ['mecânica', 'mecanica', 'pneumática', 'pneumatica', 'hidráulica', 'hidraulica'];
+    const electricalCategories = ['elétrica', 'eletrica', 'automação', 'automacao', 'instrumentação', 'instrumentacao', 'painéis', 'paineis'];
+
     return all.filter(item => {
-      // Se não for explicitamente restrito, qualquer técnico tem acesso total para consulta
-      if (!item.isRestricted) return true;
-      if (Array.isArray(item.visibleToRoles) && item.visibleToRoles.length > 0) {
-        return item.visibleToRoles.some(r => r === role || (role === 'MECANICA' && (r as string) === 'MANUTENCAO'));
+      const catLower = (item.category || '').trim().toLowerCase();
+
+      // Perfil MECÂNICA: enxerga apenas itens da mecânica
+      if (role === 'MECANICA') {
+        if (electricalCategories.includes(catLower)) {
+          return Array.isArray(item.visibleToRoles) && item.visibleToRoles.includes('MECANICA');
+        }
+        if (mechanicalCategories.includes(catLower)) {
+          if (Array.isArray(item.visibleToRoles) && item.visibleToRoles.length > 0) {
+            return item.visibleToRoles.includes('MECANICA');
+          }
+          return true;
+        }
+        return Array.isArray(item.visibleToRoles) && item.visibleToRoles.includes('MECANICA');
       }
-      return true;
+
+      // Perfil ELÉTRICA: enxerga apenas itens da elétrica
+      if (role === 'ELETRICA') {
+        if (mechanicalCategories.includes(catLower)) {
+          return Array.isArray(item.visibleToRoles) && item.visibleToRoles.includes('ELETRICA');
+        }
+        if (electricalCategories.includes(catLower)) {
+          if (Array.isArray(item.visibleToRoles) && item.visibleToRoles.length > 0) {
+            return item.visibleToRoles.includes('ELETRICA');
+          }
+          return true;
+        }
+        return Array.isArray(item.visibleToRoles) && item.visibleToRoles.includes('ELETRICA');
+      }
+
+      return false;
     });
   },
 
@@ -703,11 +815,12 @@ export const storageService = {
       resultMachine = newMachine;
     }
 
-    // Salva localmente de imediato
+    // Salva localmente de imediato e adiciona à fila de sincronização pendente
     localStorage.setItem(STORAGE_KEYS.MACHINES, JSON.stringify(machines));
+    this.addPendingSyncMachine(resultMachine);
     window.dispatchEvent(new CustomEvent('ifta_data_synced'));
 
-    // Persistência direta e atômica no Docker / backend com broadcast
+    // Persistência direta no servidor / Docker com broadcast
     try {
       const res = await fetch('/api/machines', {
         method: 'POST',
@@ -719,6 +832,10 @@ export const storageService = {
         const json = await res.json();
         if (json.machine) {
           resultMachine = json.machine;
+          this.removePendingSyncMachine(resultMachine.id);
+          this.removePendingSyncMachine(resultMachine.tagCode);
+          (resultMachine as any)._synced = true;
+
           const currentMachines = this.getMachines();
           const targetIdx = currentMachines.findIndex(m => m.id === resultMachine.id || m.tagCode.toUpperCase() === resultMachine.tagCode.toUpperCase());
           if (targetIdx >= 0) {
@@ -731,7 +848,7 @@ export const storageService = {
         }
       }
     } catch (err) {
-      console.warn('[STORAGE] Erro ao sincronizar máquina com o servidor:', err);
+      console.warn('[STORAGE] Erro de rede ao sincronizar máquina com o servidor (mantida na fila):', err);
     }
 
     return resultMachine;

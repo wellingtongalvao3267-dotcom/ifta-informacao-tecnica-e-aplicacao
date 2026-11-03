@@ -43,31 +43,31 @@ export const INITIAL_CATEGORIES = [
 export const INITIAL_CATEGORY_PERMISSIONS: CategoryAccessRule[] = [
   {
     category: 'Elétrica',
-    allowedRoles: ['CDI', 'MECANICA', 'ELETRICA']
+    allowedRoles: ['CDI', 'ELETRICA']
   },
   {
     category: 'Mecânica',
-    allowedRoles: ['CDI', 'MECANICA', 'ELETRICA']
+    allowedRoles: ['CDI', 'MECANICA']
   },
   {
     category: 'Pneumática',
-    allowedRoles: ['CDI', 'MECANICA', 'ELETRICA']
+    allowedRoles: ['CDI', 'MECANICA']
   },
   {
     category: 'Automação',
-    allowedRoles: ['CDI', 'MECANICA', 'ELETRICA']
+    allowedRoles: ['CDI', 'ELETRICA']
   },
   {
     category: 'Hidráulica',
-    allowedRoles: ['CDI', 'MECANICA', 'ELETRICA']
+    allowedRoles: ['CDI', 'MECANICA']
   },
   {
     category: 'Instrumentação',
-    allowedRoles: ['CDI', 'MECANICA', 'ELETRICA']
+    allowedRoles: ['CDI', 'ELETRICA']
   },
   {
     category: 'Painéis',
-    allowedRoles: ['CDI', 'MECANICA', 'ELETRICA']
+    allowedRoles: ['CDI', 'ELETRICA']
   }
 ];
 

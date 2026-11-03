@@ -87,18 +87,9 @@ function loadDatabase(): IftaDatabase {
             }
           });
         }
-        if (Array.isArray(parsed.categoryPermissions)) {
-          const standardRoles: UserRole[] = ['CDI', 'MECANICA', 'ELETRICA'];
-          parsed.categoryPermissions.forEach((p: any) => {
-            if (!Array.isArray(p.allowedRoles)) p.allowedRoles = [];
-            standardRoles.forEach(r => {
-              if (!p.allowedRoles.includes(r)) {
-                p.allowedRoles.push(r);
-                needsSave = true;
-              }
-            });
-          });
-        }
+        // Restaurar segregação estrita de perfis: Mecânica apenas itens da mecânica, Elétrica apenas da elétrica, CDI enxerga tudo
+        parsed.categoryPermissions = INITIAL_CATEGORY_PERMISSIONS;
+        needsSave = true;
         if (needsSave) {
           saveDatabase(parsed);
         }

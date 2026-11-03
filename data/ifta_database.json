@@ -1,106 +1,6 @@
 {
   "components": [
     {
-      "id": "comp-elet-1793663816",
-      "tagCode": "INV-AUDIT-02",
-      "name": "Inversor de Frequencia WEG CFW500",
-      "category": "Eletrica",
-      "manufacturer": "WEG",
-      "model": "CFW500-15A",
-      "application": "Esteira de Transporte 01",
-      "description": "Inversor com controle vetorial sensorless para acionamento de esteira.",
-      "imageUrl": "",
-      "specs": [
-        {
-          "label": "Corrente",
-          "value": "15 A"
-        }
-      ],
-      "maintenanceGuide": [],
-      "commonFailures": [],
-      "visibleToRoles": [
-        "CDI",
-        "MECANICA",
-        "ELETRICA"
-      ],
-      "createdBy": "CDI",
-      "qrCodeData": "IFTA:INV-AUDIT-02",
-      "updatedAt": "2026-11-02T23:56:56.093Z",
-      "createdAt": "2026-11-02T23:56:56.093Z"
-    },
-    {
-      "id": "comp-audit-1793537769",
-      "tagCode": "MOT-AUDIT-01",
-      "name": "Motor Redutor Auditoria SEW",
-      "category": "Mecânica",
-      "manufacturer": "SEW Eurodrive",
-      "model": "KAF77 DRE100LC4",
-      "application": "Linha 01 - Elevador Principal",
-      "description": "Motor de alta eficiência com inversor WEG integrado e parametrização salva.",
-      "imageUrl": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80",
-      "specs": [
-        {
-          "label": "Potência",
-          "value": "3.0 kW"
-        },
-        {
-          "label": "Rotação",
-          "value": "1720 RPM"
-        },
-        {
-          "label": "Inversor",
-          "value": "CFW11 7.5A"
-        }
-      ],
-      "maintenanceGuide": [
-        {
-          "step": 1,
-          "title": "Nível de Óleo",
-          "instruction": "Verificar visor",
-          "torqueOrMeasure": "Visual"
-        }
-      ],
-      "commonFailures": [
-        {
-          "symptom": "Aquecimento",
-          "probableCause": "Sobrecarga",
-          "correctiveAction": "Checar corrente"
-        }
-      ],
-      "visibleToRoles": [
-        "CDI",
-        "MECANICA",
-        "ELETRICA"
-      ],
-      "createdBy": "CDI",
-      "updatedBy": "ELETRICA",
-      "qrCodeData": "IFTA:MOT-AUDIT-01",
-      "updatedAt": "2026-11-01T12:56:09.635Z",
-      "createdAt": "2026-11-01T12:56:09.618Z"
-    },
-    {
-      "id": "comp-test-realtime-1",
-      "tagCode": "TEST-RT-01",
-      "name": "Peça Teste Realtime",
-      "category": "Mecânica",
-      "visibleToRoles": [
-        "CDI",
-        "MECANICA",
-        "ELETRICA"
-      ],
-      "qrCodeData": "IFTA:TEST-RT-01",
-      "updatedAt": "2026-10-31T19:39:42.630Z",
-      "createdAt": "2026-10-31T19:39:42.630Z"
-    },
-    {
-      "id": "test-123",
-      "tagCode": "TEST-999",
-      "name": "Peça Teste",
-      "qrCodeData": "IFTA:TEST-999",
-      "updatedAt": "2026-10-31T19:36:35.089Z",
-      "createdAt": "2026-10-31T19:36:35.089Z"
-    },
-    {
       "id": "comp-001",
       "tagCode": "MOT-IND-042",
       "name": "Motor Elétrico Trifásico de Indução 7.5kW (10CV)",
@@ -1138,56 +1038,49 @@
       "category": "Elétrica",
       "allowedRoles": [
         "CDI",
-        "ELETRICA",
-        "MECANICA"
+        "ELETRICA"
       ]
     },
     {
       "category": "Mecânica",
       "allowedRoles": [
         "CDI",
-        "MECANICA",
-        "ELETRICA"
+        "MECANICA"
       ]
     },
     {
       "category": "Pneumática",
       "allowedRoles": [
         "CDI",
-        "MECANICA",
-        "ELETRICA"
+        "MECANICA"
       ]
     },
     {
       "category": "Automação",
       "allowedRoles": [
         "CDI",
-        "ELETRICA",
-        "MECANICA"
+        "ELETRICA"
       ]
     },
     {
       "category": "Hidráulica",
       "allowedRoles": [
         "CDI",
-        "MECANICA",
-        "ELETRICA"
+        "MECANICA"
       ]
     },
     {
       "category": "Instrumentação",
       "allowedRoles": [
         "CDI",
-        "ELETRICA",
-        "MECANICA"
+        "ELETRICA"
       ]
     },
     {
       "category": "Painéis",
       "allowedRoles": [
         "CDI",
-        "ELETRICA",
-        "MECANICA"
+        "ELETRICA"
       ]
     }
   ],
@@ -1285,5 +1178,5 @@
     }
   ],
   "version": "2026.3",
-  "lastUpdated": "2026-11-02T23:56:56.093Z"
+  "lastUpdated": "2026-11-03T00:31:20.248Z"
 }

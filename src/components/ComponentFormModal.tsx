@@ -57,10 +57,28 @@ export const ComponentFormModal: React.FC<ComponentFormModalProps> = ({
     ]
   );
 
-  // Visible to roles
-  const [visibleToRoles, setVisibleToRoles] = useState<UserRole[]>(
-    initialComponent?.visibleToRoles || ['CDI', 'MECANICA', 'ELETRICA']
-  );
+  // Visible to roles (Segregação de acesso: Mecânica enxerga apenas mecânica, Elétrica apenas elétrica, CDI total)
+  const [visibleToRoles, setVisibleToRoles] = useState<UserRole[]>(() => {
+    if (initialComponent?.visibleToRoles && initialComponent.visibleToRoles.length > 0) {
+      return initialComponent.visibleToRoles;
+    }
+    const cat = initialComponent?.category || 'Mecânica';
+    if (['Elétrica', 'Automação', 'Instrumentação', 'Painéis'].includes(cat)) {
+      return ['CDI', 'ELETRICA'];
+    }
+    return ['CDI', 'MECANICA'];
+  });
+
+  const handleCategorySelect = (newCat: string) => {
+    setCategory(newCat);
+    if (!isEditing) {
+      if (['Elétrica', 'Automação', 'Instrumentação', 'Painéis'].includes(newCat)) {
+        setVisibleToRoles(['CDI', 'ELETRICA']);
+      } else if (['Mecânica', 'Pneumática', 'Hidráulica'].includes(newCat)) {
+        setVisibleToRoles(['CDI', 'MECANICA']);
+      }
+    }
+  };
 
   const [error, setError] = useState('');
 
@@ -289,7 +307,7 @@ export const ComponentFormModal: React.FC<ComponentFormModalProps> = ({
                 </label>
                 <select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  onChange={(e) => handleCategorySelect(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-slate-100 focus:border-amber-500 focus:outline-none"
                 >
                   {INITIAL_CATEGORIES.map((cat) => (
@@ -626,6 +644,14 @@ export const ComponentFormModal: React.FC<ComponentFormModalProps> = ({
               </label>
             </div>
           </div>
+
+          {/* Bottom Error message for mobile view */}
+          {error && (
+            <div className="p-3 bg-red-950/80 border border-red-800 rounded-lg flex items-center gap-2 text-xs text-red-200">
+              <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
 
           {/* Form Actions */}
           <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3">

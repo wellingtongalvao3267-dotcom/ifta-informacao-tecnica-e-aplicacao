@@ -57,12 +57,26 @@ export default function App() {
   const [editingMachine, setEditingMachine] = useState<MachineItem | null>(null);
   const [detailInitialTab, setDetailInitialTab] = useState<'specs' | 'diagram' | 'maintenance' | 'failures' | 'manual' | 'qr'>('specs');
   const [saveFeedback, setSaveFeedback] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const showSaveToast = (message: string) => {
     setSaveFeedback(message);
     setTimeout(() => {
       setSaveFeedback(null);
     }, 4500);
+  };
+
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    showSaveToast('Sincronizando com o banco de dados central...');
+    const result = await storageService.syncWithServer();
+    refreshComponents();
+    setIsSyncing(false);
+    if (result.success) {
+      showSaveToast('✅ Sincronizado com o banco central! Todos os dados atualizados.');
+    } else {
+      showSaveToast('💾 Operando em modo local. Dados preservados com segurança.');
+    }
   };
 
   // Initialize service on mount
@@ -222,17 +236,21 @@ export default function App() {
   const handleSaveComponent = async (item: ComponentItem) => {
     setIsFormModalOpen(false);
     setEditingComponent(null);
-    showSaveToast(`Salvando "${item.name}" no banco de dados compartilhado...`);
+    showSaveToast(`Salvando "${item.name}" no banco de dados...`);
     try {
       const saved = await storageService.saveComponent(item);
       refreshComponents();
-      showSaveToast(`✅ Peça "${saved.name}" (${saved.tagCode}) salva e compartilhada com todos os usuários!`);
+      if ((saved as any)._synced) {
+        showSaveToast(`✅ Peça "${saved.name}" (${saved.tagCode}) salva e sincronizada no banco central!`);
+      } else {
+        showSaveToast(`💾 Peça "${saved.name}" salva no dispositivo! Sincronizando com o banco...`);
+      }
       if (currentUser) {
         storageService.addLog(
           currentUser.username,
           currentUser.role,
           `Edição/Cadastro de Peça: ${item.tagCode}`,
-          `Registro compartilhado no banco de dados da fábrica.`
+          `Registro salvo no banco de dados da fábrica.`
         );
       }
     } catch {
@@ -262,17 +280,21 @@ export default function App() {
   const handleSaveMachine = async (machine: MachineItem) => {
     setIsMachineFormOpen(false);
     setEditingMachine(null);
-    showSaveToast(`Salvando máquina "${machine.name}" no banco de dados compartilhado...`);
+    showSaveToast(`Salvando máquina "${machine.name}" no banco de dados...`);
     try {
       const saved = await storageService.saveMachine(machine);
       refreshComponents();
-      showSaveToast(`✅ Máquina "${saved.name}" (${saved.tagCode}) salva e compartilhada com todos os usuários!`);
+      if ((saved as any)._synced) {
+        showSaveToast(`✅ Máquina "${saved.name}" (${saved.tagCode}) salva e sincronizada no banco central!`);
+      } else {
+        showSaveToast(`💾 Máquina "${saved.name}" salva no dispositivo! Sincronizando com o banco...`);
+      }
       if (currentUser) {
         storageService.addLog(
           currentUser.username,
           currentUser.role,
           `Cadastro/Edição de Máquina: ${machine.tagCode}`,
-          `Máquina ${machine.name} compartilhada no banco de dados da fábrica.`
+          `Máquina ${machine.name} salva no banco de dados da fábrica.`
         );
       }
     } catch {
@@ -402,6 +424,8 @@ export default function App() {
         onLogout={handleLogout}
         isAdminOpen={isAdminPanelOpen}
         isRealtimeConnected={isRealtimeConnected}
+        onManualSync={handleManualSync}
+        isSyncing={isSyncing}
       />
 
       {/* Offline Status Badge / Alert Bar */}
