@@ -82,7 +82,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onShow
       <div className="relative z-10 w-full max-w-md">
         {/* Brand header */}
         <div className="text-center mb-5 flex flex-col items-center">
-          <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl border border-slate-700/80 shadow-2xl shadow-indigo-900/30 mb-4 overflow-hidden flex items-center justify-center">
+          <div className="w-48 h-48 sm:w-60 sm:h-60 md:w-64 md:h-64 rounded-3xl border-2 border-amber-500/40 shadow-2xl shadow-indigo-900/40 mb-5 overflow-hidden flex items-center justify-center bg-slate-900">
             <img
               src="/assets/aistudio/logo_afta_c1e6655b.jpeg"
               alt="Logo IFTA - Bello Alimentos"
