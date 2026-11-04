@@ -9,8 +9,8 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onShowSplashAgain }) => {
-  const [selectedRole, setSelectedRole] = useState<UserRole>('CDI');
-  const [username, setUsername] = useState('CDI');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('MECANICA');
+  const [username, setUsername] = useState('MECANICA');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
